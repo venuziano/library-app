@@ -1,0 +1,35 @@
+services:
+  app:
+    build: .
+    ports:
+      - "3010:3010"  
+    volumes:
+      - .:/src             
+      - ./node_modules:/src/node_modules
+    depends_on:
+      - postgres
+    environment:
+      API_PORT: ${API_PORT}
+      PG_TYPE: ${PG_TYPE}
+      PG_PORT: ${PG_PORT}
+      HOST: ${HOST}
+      USERNAME: ${DB_USER}
+      DATABASE: ${DATABASE}
+      PASSWORD: ${DB_PASSWORD}
+      GRAPHQL_PLAYGROUND: ${GRAPHQL_PLAYGROUND}
+
+  postgres:
+    image: postgres:13-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DATABASE}
+    ports:
+      - "5432:5432"
+    volumes:
+      - library-app-pg-data:/var/lib/postgresql/data
+
+volumes:
+  library-app-api-data:
+  library-app-pg-data:
