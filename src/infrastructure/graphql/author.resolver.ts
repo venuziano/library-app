@@ -6,20 +6,20 @@ import { CreateAuthorInput } from '../graphql-types/author/create-author.input';
 
 @Resolver(() => AuthorGQL)
 export class AuthorResolver {
-  constructor(private readonly svc: AuthorService) {}
+  constructor(private readonly authorService: AuthorService) {}
 
   @Query(() => [AuthorGQL], { name: 'authors' })
   getAll() {
-    return this.svc.findAll();
+    return this.authorService.findAll();
   }
 
   @Query(() => AuthorGQL, { name: 'author', nullable: true })
   getById(@Args('id', { type: () => ID }) id: number) {
-    return this.svc.findById(id);
+    return this.authorService.findById(id);
   }
 
   @Mutation(() => AuthorGQL)
   createAuthor(@Args('input') input: CreateAuthorInput) {
-    return this.svc.create(input);
+    return this.authorService.create(input);
   }
 }

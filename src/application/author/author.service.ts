@@ -7,15 +7,15 @@ import { CreateAuthorDto } from './dtos/create-author.dto';
 export class AuthorService {
   constructor(
     @Inject('AuthorRepository')
-    private readonly repo: AuthorRepository,
+    private readonly authorRepository: AuthorRepository,
   ) {}
 
   findAll(): Promise<Author[]> {
-    return this.repo.findAll();
+    return this.authorRepository.findAll();
   }
 
   findById(id: number): Promise<Author | null> {
-    return this.repo.findById(id);
+    return this.authorRepository.findById(id);
   }
 
   async create(dto: CreateAuthorDto): Promise<Author> {
@@ -23,6 +23,6 @@ export class AuthorService {
       firstname: dto.firstname,
       lastname: dto.lastname,
     });
-    return this.repo.create(author);
+    return this.authorRepository.create(author);
   }
 }
