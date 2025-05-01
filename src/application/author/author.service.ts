@@ -22,6 +22,7 @@ export class AuthorService {
     const existing: Author | null = await this.authorRepository.findByFirstname(
       dto.firstname,
     );
+
     if (existing) {
       throw new ConflictException('Author already exists');
     }

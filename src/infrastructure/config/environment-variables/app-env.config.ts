@@ -36,8 +36,4 @@ export class AppEnvConfigService {
   get dbPassword(): string {
     return this.configService.getOrThrow<string>('PASSWORD');
   }
-
-  get graphQLPlayground(): boolean {
-    return this.configService.getOrThrow<boolean>('GRAPHQL_PLAYGROUND');
-  }
 }

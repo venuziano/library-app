@@ -16,7 +16,6 @@ services:
       USERNAME: ${DB_USER}
       DATABASE: ${DATABASE}
       PASSWORD: ${DB_PASSWORD}
-      GRAPHQL_PLAYGROUND: ${GRAPHQL_PLAYGROUND}
 
   postgres:
     image: postgres:13-alpine

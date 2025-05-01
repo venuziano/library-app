@@ -1,8 +1,8 @@
 import { Global, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-import { AppConfigModule } from 'src/config/app-config.module';
-import { AppEnvConfigService } from 'src/config/environment-variables/app-env.config';
+import { AppConfigModule } from 'src/infrastructure/config/app-config.module';
+import { AppEnvConfigService } from 'src/infrastructure/config/environment-variables/app-env.config';
 
 @Global()
 @Module({
