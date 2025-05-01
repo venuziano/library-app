@@ -1,6 +1,7 @@
 import { ObjectType, Field, ID } from '@nestjs/graphql';
 
 import { CommonDatesGQL } from '../shared/common-dates.graphql-types';
+import { Paginated } from '../shared/pagination.output.gql';
 
 @ObjectType()
 export class AuthorGQL extends CommonDatesGQL {
@@ -13,3 +14,6 @@ export class AuthorGQL extends CommonDatesGQL {
   @Field()
   lastname: string;
 }
+
+@ObjectType()
+export class PaginatedAuthorsGQL extends Paginated(AuthorGQL) {}

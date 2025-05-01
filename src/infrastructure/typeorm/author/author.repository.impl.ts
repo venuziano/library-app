@@ -1,11 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { Repository } from 'typeorm';
+import { FindManyOptions, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { AuthorOrm } from './author.orm-entity';
 import { AuthorRepository } from 'src/domain/author/author.repository';
 import { Author } from 'src/domain/author/author.entity';
-import { Pagination } from 'src/domain/pagination/pagination.entity';
+import {
+  Pagination,
+  PaginationResult,
+} from 'src/domain/pagination/pagination.entity';
 
 @Injectable()
 export class AuthorRepositoryImpl implements AuthorRepository {
@@ -25,16 +28,25 @@ export class AuthorRepositoryImpl implements AuthorRepository {
     });
   }
 
-  async findAll(properties: Pagination): Promise<Author[]> {
-    const { limit, offset } = properties;
-
-    const authors = await this.authorRepository.find({
-      take: limit,
-      skip: offset,
-      select: ['id', 'firstname', 'lastname', 'createdAt', 'updatedAt'],
+  async findAll(properties: Pagination): Promise<PaginationResult<Author>> {
+    const query: FindManyOptions<AuthorOrm> = {
+      take: properties.limit,
+      skip: properties.offset,
       order: { id: 'DESC' },
-    });
-    return authors.map((author) => this.toDomain(author));
+      select: ['id', 'firstname', 'lastname', 'createdAt', 'updatedAt'],
+    };
+
+    const [entities, totalItems] =
+      await this.authorRepository.findAndCount(query);
+
+    const items = entities.map((entity) => this.toDomain(entity));
+
+    return new PaginationResult(
+      items,
+      properties.page,
+      properties.limit,
+      totalItems,
+    );
   }
 
   async findById(id: number): Promise<Author | null> {

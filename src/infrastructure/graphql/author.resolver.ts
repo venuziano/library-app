@@ -1,17 +1,27 @@
 import { Resolver, Query, Mutation, Args, ID } from '@nestjs/graphql';
 
 import { AuthorService } from '../../application/author/author.service';
-import { AuthorGQL } from '../graphql-types/author/author.gql';
+import {
+  AuthorGQL,
+  PaginatedAuthorsGQL,
+} from '../graphql-types/author/author.gql';
 import { CreateAuthorInput } from '../graphql-types/author/create-author.input';
+import { toPaginatedGQL } from '../graphql-types/shared/pagination.output.gql';
+import { plainToClass } from 'class-transformer';
 import { PaginationGQL } from '../graphql-types/shared/pagination.input.gql';
 
 @Resolver(() => AuthorGQL)
 export class AuthorResolver {
   constructor(private readonly authorService: AuthorService) {}
 
-  @Query(() => [AuthorGQL], { name: 'authors' })
-  getAll(@Args() pagination: PaginationGQL) {
-    return this.authorService.findAll(pagination);
+  @Query(() => PaginatedAuthorsGQL)
+  async authors(
+    @Args() pagination: PaginationGQL,
+  ): Promise<PaginatedAuthorsGQL> {
+    return toPaginatedGQL(
+      await this.authorService.findAll(pagination),
+      (author) => plainToClass(AuthorGQL, author),
+    );
   }
 
   @Query(() => AuthorGQL, { name: 'author', nullable: true })
