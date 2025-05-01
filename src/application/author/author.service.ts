@@ -4,7 +4,7 @@ import { Author } from '../../domain/author/author.entity';
 import { AuthorRepository } from '../../domain/author/author.repository';
 import { CreateAuthorDto } from './dtos/create-author.dto';
 import { PaginationDto } from '../pagination/pagination.dto';
-import { Pagination } from 'src/domain/pagination/pagination';
+import { Pagination } from 'src/domain/pagination/pagination.entity';
 
 @Injectable()
 export class AuthorService {

@@ -3,7 +3,7 @@ import { Resolver, Query, Mutation, Args, ID } from '@nestjs/graphql';
 import { AuthorService } from '../../application/author/author.service';
 import { AuthorGQL } from '../graphql-types/author/author.gql';
 import { CreateAuthorInput } from '../graphql-types/author/create-author.input';
-import { PaginationGQL } from '../graphql-types/shared/pagination.graphql-types';
+import { PaginationGQL } from '../graphql-types/shared/pagination.input.gql';
 
 @Resolver(() => AuthorGQL)
 export class AuthorResolver {

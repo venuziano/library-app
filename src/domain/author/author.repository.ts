@@ -1,4 +1,4 @@
-import { Pagination } from '../pagination/pagination';
+import { Pagination } from '../pagination/pagination.entity';
 import { Author } from './author.entity';
 
 export interface AuthorRepository {

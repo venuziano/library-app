@@ -5,7 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { AuthorOrm } from './author.orm-entity';
 import { AuthorRepository } from 'src/domain/author/author.repository';
 import { Author } from 'src/domain/author/author.entity';
-import { Pagination } from 'src/domain/pagination/pagination';
+import { Pagination } from 'src/domain/pagination/pagination.entity';
 
 @Injectable()
 export class AuthorRepositoryImpl implements AuthorRepository {

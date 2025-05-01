@@ -1,4 +1,3 @@
-// src/graphql-types/pagination.input.ts
 import { ArgsType, Field, Int } from '@nestjs/graphql';
 
 import {
