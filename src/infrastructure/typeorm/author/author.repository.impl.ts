@@ -34,6 +34,13 @@ export class AuthorRepositoryImpl implements AuthorRepository {
     return foundAuthor ? this.toDomain(foundAuthor) : null;
   }
 
+  async findByFirstname(firstname: string): Promise<Author | null> {
+    const foundAuthor = await this.authorRepository.findOne({
+      where: { firstname },
+    });
+    return foundAuthor ? this.toDomain(foundAuthor) : null;
+  }
+
   async create(author: Author): Promise<Author> {
     const newAuthor = this.authorRepository.create({
       firstname: author.firstname,

@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, ConflictException } from '@nestjs/common';
 import { Author } from '../../domain/author/author.entity';
 import { AuthorRepository } from '../../domain/author/author.repository';
 import { CreateAuthorDto } from './dtos/create-author.dto';
@@ -19,6 +19,13 @@ export class AuthorService {
   }
 
   async create(dto: CreateAuthorDto): Promise<Author> {
+    const existing: Author | null = await this.authorRepository.findByFirstname(
+      dto.firstname,
+    );
+    if (existing) {
+      throw new ConflictException('Author already exists');
+    }
+
     const author = Author.create({
       firstname: dto.firstname,
       lastname: dto.lastname,

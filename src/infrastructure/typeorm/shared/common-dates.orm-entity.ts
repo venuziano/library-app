@@ -20,5 +20,5 @@ export class CommonDatesEntity {
     type: 'timestamp',
     default: () => null,
   })
-  deletedAt: Date;
+  deletedAt?: Date;
 }
