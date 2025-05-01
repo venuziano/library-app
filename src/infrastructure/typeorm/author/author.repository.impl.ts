@@ -2,9 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 
-import { AuthorRepository } from '../../../domain/author/author.repository';
-import { Author } from '../../../domain/author/author.entity';
 import { AuthorOrm } from './author.orm-entity';
+import { AuthorRepository } from 'src/domain/author/author.repository';
+import { Author } from 'src/domain/author/author.entity';
+import { Pagination } from 'src/domain/pagination/pagination';
 
 @Injectable()
 export class AuthorRepositoryImpl implements AuthorRepository {
@@ -24,8 +25,15 @@ export class AuthorRepositoryImpl implements AuthorRepository {
     });
   }
 
-  async findAll(): Promise<Author[]> {
-    const authors = await this.authorRepository.find();
+  async findAll(properties: Pagination): Promise<Author[]> {
+    const { limit, offset } = properties;
+
+    const authors = await this.authorRepository.find({
+      take: limit,
+      skip: offset,
+      select: ['id', 'firstname', 'lastname', 'createdAt', 'updatedAt'],
+      order: { id: 'DESC' },
+    });
     return authors.map((author) => this.toDomain(author));
   }
 

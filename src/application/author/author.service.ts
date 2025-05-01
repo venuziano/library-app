@@ -1,7 +1,10 @@
 import { Injectable, Inject, ConflictException } from '@nestjs/common';
+
 import { Author } from '../../domain/author/author.entity';
 import { AuthorRepository } from '../../domain/author/author.repository';
 import { CreateAuthorDto } from './dtos/create-author.dto';
+import { PaginationDto } from '../pagination/pagination.dto';
+import { Pagination } from 'src/domain/pagination/pagination';
 
 @Injectable()
 export class AuthorService {
@@ -10,8 +13,9 @@ export class AuthorService {
     private readonly authorRepository: AuthorRepository,
   ) {}
 
-  findAll(): Promise<Author[]> {
-    return this.authorRepository.findAll();
+  findAll(properties: PaginationDto): Promise<Author[]> {
+    const pagination: Pagination = Pagination.fromDto(properties);
+    return this.authorRepository.findAll(pagination);
   }
 
   findById(id: number): Promise<Author | null> {
