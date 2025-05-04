@@ -1,5 +1,4 @@
 import { calculateOffset, SortOrder } from 'src/application/pagination/helpers';
-import { PaginationDto } from 'src/application/pagination/pagination.dto';
 
 export class Pagination {
   readonly limit: number;
@@ -21,8 +20,13 @@ export class Pagination {
     this.page = page;
   }
 
-  static fromDto(dto: PaginationDto): Pagination {
-    return new Pagination(dto.limit, dto.page, dto.sort, dto.order);
+  static of(
+    limit: number,
+    page: number,
+    sortBy: string,
+    order: SortOrder,
+  ): Pagination {
+    return new Pagination(limit, page, sortBy, order);
   }
 }
 

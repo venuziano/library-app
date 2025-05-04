@@ -17,7 +17,8 @@ export class AuthorService {
   ) {}
 
   findAll(properties: PaginationDto): Promise<PaginationResult<Author>> {
-    const pagination: Pagination = Pagination.fromDto(properties);
+    const { limit, page, sort, order } = properties;
+    const pagination: Pagination = Pagination.of(limit, page, sort, order);
     return this.authorRepository.findAll(pagination);
   }
 
