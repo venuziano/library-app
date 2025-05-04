@@ -38,6 +38,13 @@ export class AppEnvConfigService {
   }
 
   get redisURL(): string {
-    return this.configService.getOrThrow<string>('REDIS_URL');
+    return this.configService.getOrThrow<string>(
+      'REDIS_URL',
+      'redis://redis:6379',
+    );
+  }
+
+  get cacheTTL(): number {
+    return this.configService.getOrThrow<number>('CACHE_TTL', 120);
   }
 }

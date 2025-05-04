@@ -1,4 +1,13 @@
 services:
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    restart: unless-stopped
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis-data:/data
+
   app:
     build: .
     ports:
@@ -17,6 +26,7 @@ services:
       DATABASE: ${DATABASE}
       PASSWORD: ${DB_PASSWORD}
       REDIS_URL: ${REDIS_URL}
+      CACHE_TTL: ${CACHE_TTL}
 
   postgres:
     image: postgres:13-alpine
@@ -31,5 +41,5 @@ services:
       - library-app-pg-data:/var/lib/postgresql/data
 
 volumes:
-  library-app-api-data:
+  redis-data:
   library-app-pg-data:

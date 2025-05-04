@@ -6,9 +6,15 @@ import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin
 
 import { AuthorModule } from './modules/author.module';
 import { DatabaseModule } from './infrastructure/database/database.module';
+import { InfrastructureCacheModule } from './infrastructure/cache/cache.module';
 
 @Module({
   imports: [
+    // Config modules
+    DatabaseModule,
+
+    InfrastructureCacheModule,
+
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
       // automatically generate schema.gql next to your compiled code:
@@ -25,9 +31,6 @@ import { DatabaseModule } from './infrastructure/database/database.module';
 
     // Application modules
     AuthorModule,
-
-    // Config modules
-    DatabaseModule,
   ],
 })
 export class AppModule {}

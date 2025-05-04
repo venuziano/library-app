@@ -19,6 +19,7 @@ import { AppEnvConfigService } from './environment-variables/app-env.config';
         PASSWORD: Joi.string().required(),
         DATABASE: Joi.string().required(),
         REDIS_URL: Joi.string().required(),
+        CACHE_TTL: Joi.number().required(),
       }),
     }),
   ],
