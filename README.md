@@ -2,7 +2,7 @@
 
 **Work in progress**
 
-Here’s a revised version that subtly highlights your intent to showcase your experience:
+This repository serves as a hands‑on demonstration of my experience with the following system design technologies:
 * Nest.js
 * Redis
 * * Shared cache and cache invalidation
