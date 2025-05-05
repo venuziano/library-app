@@ -13,6 +13,7 @@ import { PaginationGQL } from '../graphql-types/shared/pagination.input.gql';
 import { PaginationResult } from 'src/domain/pagination/pagination.entity';
 import { Author } from 'src/domain/author/author.entity';
 import { ICacheService } from 'src/domain/cache/interfaces';
+import { authorCacheKey } from '../cache/cache-keys';
 
 @Resolver(() => AuthorGQL)
 export class AuthorResolver {
@@ -27,7 +28,7 @@ export class AuthorResolver {
   ): Promise<PaginatedAuthorsGQL> {
     const { limit, page, sort, order } = pagination;
 
-    const cacheKey: string = `authors:limit=${limit}:page=${page}:sort=${sort}:order=${order}`;
+    const cacheKey: string = `${authorCacheKey}:limit=${limit}:page=${page}:sort=${sort}:order=${order}`;
 
     const cached: PaginatedAuthorsGQL | undefined =
       await this.cache.get<PaginatedAuthorsGQL>(cacheKey);
@@ -51,7 +52,10 @@ export class AuthorResolver {
   }
 
   @Mutation(() => AuthorGQL)
-  createAuthor(@Args('input') input: CreateAuthorInput) {
-    return this.authorService.create(input);
+  async createAuthor(@Args('input') input: CreateAuthorInput) {
+    const createdAuthor = await this.authorService.create(input);
+    if (createdAuthor != null)
+      await this.cache.invalidate(`${authorCacheKey}:*`);
+    return createdAuthor;
   }
 }

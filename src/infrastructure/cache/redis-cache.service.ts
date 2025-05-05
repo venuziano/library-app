@@ -40,4 +40,9 @@ export class RedisCheckService implements OnModuleInit {
       }
     }
   }
+
+  /** expose the raw client */
+  getClient() {
+    return this.client;
+  }
 }
