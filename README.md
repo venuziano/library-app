@@ -2,23 +2,23 @@
 
 **Work in progress**
 
-The idea of this repository it's to have a hands-on project using the follow system design:
+Here’s a revised version that subtly highlights your intent to showcase your experience:
 * Nest.js
 * Redis
-* * Shared cache, invalidate cache
+* * Shared cache and cache invalidation
 * * Pub/Sub
-* * Rate limiter
-* * Cover multi-instances environment
+* * Rate limiting
+* * Multi‑instance support
 * Docker
-* Graphql
+* GraphQL
 * DDD + Clean architecture
 * PostgreSQL
 * Stripe integration
 * * Subscriptions
 * * Refunds
-* * Cancel
+* * Cancellations
 * * Webhooks
-* Error handling and logs monitoring
+* Error handling & logs monitoring
 * Unit & E2E tests
 
 ## Author
