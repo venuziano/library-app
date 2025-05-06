@@ -1,67 +1,60 @@
-import { Provider } from '@nestjs/common';
+import { Logger, Provider } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
-
 import { RedisCheckService } from './redis-cache.service';
 import { ICacheService } from 'src/domain/cache/interfaces';
 
 export const cacheProviders: Provider[] = [
   {
     provide: 'ICacheService',
+    inject: [CACHE_MANAGER, RedisCheckService],
     useFactory: (
       cache: Cache,
       redisCheckService: RedisCheckService,
-    ): ICacheService => ({
-      get: async <T = unknown>(key: string): Promise<T | undefined> => {
-        const v = await cache.get<T>(key);
-        return v ?? undefined;
-      },
+    ): ICacheService => {
+      const logger = new Logger('CacheInvalidator');
 
-      set: async (key: string, value: unknown, ttl?: number): Promise<void> => {
-        if (ttl !== undefined) {
-          await cache.set(key, value, ttl);
-        } else {
-          await cache.set(key, value);
-        }
-      },
+      return {
+        get: async <T = unknown>(key: string): Promise<T | undefined> => {
+          const value = await cache.get<T>(key);
+          return value ?? undefined;
+        },
 
-      del: async (key: string): Promise<void> => {
-        await cache.del(key);
-      },
+        set: async (key: string, value: unknown, ttl?: number) => {
+          if (ttl !== undefined) {
+            await cache.set(key, value, ttl);
+          } else {
+            await cache.set(key, value);
+          }
+        },
 
-      /**
-       * Scan & delete all keys matching the glob pattern.
-       * e.g. invalidate('authors:*')
-       */
-      invalidate: async (pattern: string): Promise<void> => {
-        const client = redisCheckService.getClient();
-        let cursor = '0';
-        const pipeline = client.multi();
-        let total = 0;
+        del: async (key: string) => {
+          await cache.del(key);
+        },
 
-        do {
-          // scan returns { cursor, keys[] }
-          const { cursor: nextCursor, keys } = await client.scan(cursor, {
+        invalidate: async (pattern: string) => {
+          const client = redisCheckService.getClient();
+          const pipeline = client.multi();
+          let total = 0;
+
+          // use scanIterator from redis@4.x
+          for await (const key of client.scanIterator({
             MATCH: pattern,
-            COUNT: 100, // number, not string
-          });
-
-          cursor = nextCursor;
-
-          for (const key of keys) {
+            COUNT: 100,
+          })) {
             pipeline.del(key);
             total++;
           }
-        } while (cursor !== '0');
 
-        if (total > 0) {
-          await pipeline.exec();
-          console.log(`🗑️ Invalidated ${total} keys matching "${pattern}"`);
-        } else {
-          console.log(`⚠️ No keys matched "${pattern}", nothing to delete`);
-        }
-      },
-    }),
-    inject: [CACHE_MANAGER, RedisCheckService],
+          if (total > 0) {
+            await pipeline.exec();
+            // now this is a safe call on our local logger
+            logger.log(`🗑️ Invalidated ${total} keys matching "${pattern}"`);
+          } else {
+            logger.warn(`⚠️ No keys matched "${pattern}"`);
+          }
+        },
+      };
+    },
   },
 ];

@@ -42,7 +42,7 @@
     "joi": "^17.13.3",
     "keyv": "^5.3.3",
     "pg": "^8.15.6",
-    "redis": "^5.0.0",
+    "redis": "^4.7.0",
     "reflect-metadata": "^0.2.2"
   },
   "devDependencies": {
