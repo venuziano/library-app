@@ -123,20 +123,6 @@ export class MultiLevelCacheService implements ICacheService, OnModuleInit {
     return undefined;
   }
 
-  // async get<T = unknown>(key: string): Promise<T | undefined> {
-  //   const memory: T | undefined = this.l1Cache.get<T>(key);
-  //   if (memory != null) return memory;
-
-  //   const raw: string | null = await this.redisClient.get(key);
-  //   if (raw != null) {
-  //     const value: T = JSON.parse(raw) as T;
-  //     this.l1Cache.set(key, value, this.defaultTTL);
-  //     return value;
-  //   }
-
-  //   return undefined;
-  // }
-
   async set(key: string, value: unknown, ttl?: number): Promise<void> {
     const effectiveTTL: number = ttl ?? this.defaultTTL;
     this.l1Cache.set(key, value, effectiveTTL);
