@@ -1,0 +1,64 @@
+services:
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - redis-data:/data
+
+  postgres:
+    image: postgres:13-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DATABASE}
+    volumes:
+      - library-app-pg-data:/var/lib/postgresql/data
+
+  app-3010:
+    build: .
+    container_name: library-app-3010-app
+    ports:
+      - "3010:3010"
+    depends_on:
+      - redis
+      - postgres
+    volumes:
+      - .:/src
+      - ./node_modules:/src/node_modules
+    environment:
+      API_PORT: "3010"
+      PG_TYPE: "${PG_TYPE}"
+      HOST: postgres
+      PG_PORT: "5432"
+      USERNAME: "${DB_USER}"
+      DATABASE: "${DATABASE}"
+      PASSWORD: "${DB_PASSWORD}"
+      REDIS_URL: "${REDIS_URL}"
+      CACHE_TTL: "${CACHE_TTL}"
+
+  app-3011:
+    build: .
+    container_name: library-app-3011-app
+    ports:
+      - "3011:3011"
+    depends_on:
+      - redis
+      - postgres
+    volumes:
+      - .:/src
+      - ./node_modules:/src/node_modules
+    environment:
+      API_PORT: "3011"
+      PG_TYPE: "${PG_TYPE}"
+      HOST: postgres
+      PG_PORT: "5432"
+      USERNAME: "${DB_USER}"
+      DATABASE: "${DATABASE}"
+      PASSWORD: "${DB_PASSWORD}"
+      REDIS_URL: "${REDIS_URL}"
+      CACHE_TTL: "${CACHE_TTL}"
+
+volumes:
+  redis-data:
+  library-app-pg-data:
