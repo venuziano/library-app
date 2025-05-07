@@ -19,7 +19,7 @@ export class MultiLevelCacheService implements ICacheService, OnModuleInit {
   private readonly defaultTTL: number;
   private readonly cacheTTLL2: number;
   private readonly l1Cache: NodeCache;
-  private readonly instanceId = randomUUID();
+  private readonly instanceId: string = randomUUID();
 
   private redisClient: RedisClientType;
   private redisSubClient: RedisClientType;
@@ -63,10 +63,10 @@ export class MultiLevelCacheService implements ICacheService, OnModuleInit {
       }
 
       // Invalidation logic on other instances
-      const re = new RegExp('^' + payload.key.replace(/\*/g, '.*') + '$');
-      for (const k of this.l1Cache.keys()) {
-        if (re.test(k)) {
-          this.l1Cache.del(k);
+      const foundKey = new RegExp('^' + payload.key.replace(/\*/g, '.*') + '$');
+      for (const key of this.l1Cache.keys()) {
+        if (foundKey.test(key)) {
+          this.l1Cache.del(key);
         }
       }
       this.logger.log(`L1 invalidated for pattern "${payload.key}"`);
@@ -89,21 +89,21 @@ export class MultiLevelCacheService implements ICacheService, OnModuleInit {
   }
 
   async get<T = unknown>(key: string): Promise<T | undefined> {
-    const memory = this.l1Cache.get<T>(key);
+    const memory: T | undefined = this.l1Cache.get<T>(key);
     if (memory != null) return memory;
 
-    const raw = await this.redisClient.get(key);
+    const raw: string | null = await this.redisClient.get(key);
     if (raw != null) {
-      const val = JSON.parse(raw) as T;
-      this.l1Cache.set(key, val, this.defaultTTL);
-      return val;
+      const value: T = JSON.parse(raw) as T;
+      this.l1Cache.set(key, value, this.defaultTTL);
+      return value;
     }
 
     return undefined;
   }
 
   async set(key: string, value: unknown, ttl?: number): Promise<void> {
-    const effectiveTTL = ttl ?? this.defaultTTL;
+    const effectiveTTL: number = ttl ?? this.defaultTTL;
     this.l1Cache.set(key, value, effectiveTTL);
     await this.redisClient.set(key, JSON.stringify(value), {
       EX: this.cacheTTLL2,
