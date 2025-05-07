@@ -1,10 +1,17 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import * as NodeCache from 'node-cache';
 import { RedisCheckService } from './redis-cache.service';
+import { randomUUID } from 'crypto';
 
 import { ICacheService } from 'src/domain/cache/interfaces';
 import { AppEnvConfigService } from '../config/environment-variables/app-env.config';
 import { RedisClientType } from 'redis';
+
+interface IDebugL1EntriesProperties {
+  key: string;
+  value: unknown;
+}
 
 @Injectable()
 export class MultiLevelCacheService implements ICacheService, OnModuleInit {
@@ -12,6 +19,7 @@ export class MultiLevelCacheService implements ICacheService, OnModuleInit {
   private readonly defaultTTL: number;
   private readonly cacheTTLL2: number;
   private readonly l1Cache: NodeCache;
+  private readonly instanceId = randomUUID();
 
   private redisClient: RedisClientType;
   private redisSubClient: RedisClientType;
@@ -40,18 +48,29 @@ export class MultiLevelCacheService implements ICacheService, OnModuleInit {
     await this.redisSubClient.connect();
 
     // Subscribe to manual invalidation
-    await this.redisSubClient.subscribe(
-      'cache-invalidate',
-      (pattern: string) => {
-        const re = new RegExp('^' + pattern.replace(/\*/g, '.*') + '$');
-        for (const key of this.l1Cache.keys()) {
-          if (re.test(key)) {
-            this.l1Cache.del(key);
-          }
+    await this.redisSubClient.subscribe('cache-invalidate', (msg: string) => {
+      let payload: { key: string; origin: string };
+      try {
+        payload = JSON.parse(msg);
+      } catch {
+        this.logger.warn(`Invalid cache-invalidate message: ${msg}`);
+        return;
+      }
+
+      // Ignore messages you yourself sent
+      if (payload.origin === this.instanceId) {
+        return;
+      }
+
+      // Invalidation logic on other instances
+      const re = new RegExp('^' + payload.key.replace(/\*/g, '.*') + '$');
+      for (const k of this.l1Cache.keys()) {
+        if (re.test(k)) {
+          this.l1Cache.del(k);
         }
-        this.logger.log(`🔄 L1 invalidated for pattern "${pattern}"`);
-      },
-    );
+      }
+      this.logger.log(`L1 invalidated for pattern "${payload.key}"`);
+    });
 
     // Subscribe to Redis TTL-based expirations
     await this.redisSubClient.pSubscribe(
@@ -60,7 +79,7 @@ export class MultiLevelCacheService implements ICacheService, OnModuleInit {
         if (this.l1Cache.has(expiredKey)) {
           this.l1Cache.del(expiredKey);
           this.logger.log(
-            `⚠️ L1 invalidated due to Redis TTL expiry: ${expiredKey}`,
+            `L1 invalidated due to Redis TTL expiry: ${expiredKey}`,
           );
         }
       },
@@ -70,8 +89,8 @@ export class MultiLevelCacheService implements ICacheService, OnModuleInit {
   }
 
   async get<T = unknown>(key: string): Promise<T | undefined> {
-    const mem = this.l1Cache.get<T>(key);
-    if (mem != null) return mem;
+    const memory = this.l1Cache.get<T>(key);
+    if (memory != null) return memory;
 
     const raw = await this.redisClient.get(key);
     if (raw != null) {
@@ -85,12 +104,16 @@ export class MultiLevelCacheService implements ICacheService, OnModuleInit {
 
   async set(key: string, value: unknown, ttl?: number): Promise<void> {
     const effectiveTTL = ttl ?? this.defaultTTL;
-
     this.l1Cache.set(key, value, effectiveTTL);
-
     await this.redisClient.set(key, JSON.stringify(value), {
       EX: this.cacheTTLL2,
     });
+
+    // Publish with origin so you don’t evict your own write
+    await this.redisClient.publish(
+      'cache-invalidate',
+      JSON.stringify({ key, origin: this.instanceId }),
+    );
   }
 
   async del(key: string): Promise<void> {
@@ -127,5 +150,12 @@ export class MultiLevelCacheService implements ICacheService, OnModuleInit {
 
   public debugL1Keys(): string[] {
     return this.l1Cache.keys();
+  }
+
+  public debugL1Entries(): IDebugL1EntriesProperties[] {
+    return this.l1Cache.keys().map((key) => ({
+      key,
+      value: this.l1Cache.get(key),
+    }));
   }
 }

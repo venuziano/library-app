@@ -27,9 +27,14 @@ type PaginatedAuthorsGQL {
   pageInfo: PageInfoGQL!
 }
 
+type CacheEntry {
+  key: String!
+  value: String
+}
+
 type Query {
   authors(limit: Int! = 50, page: Int! = 1, sort: String! = "createdAt", order: SortOrder! = ASC): PaginatedAuthorsGQL!
-  cacheKeys: [String!]!
+  cacheKeys: [CacheEntry!]!
   author(id: ID!): AuthorGQL
 }
 
@@ -40,6 +45,7 @@ enum SortOrder {
 }
 
 type Mutation {
+  setCache(input: String!): Boolean!
   createAuthor(input: CreateAuthorInput!): AuthorGQL!
 }
 

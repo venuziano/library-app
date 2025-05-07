@@ -1,4 +1,13 @@
-import { Resolver, Query, Mutation, Args, ID } from '@nestjs/graphql';
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+import {
+  Resolver,
+  Query,
+  Mutation,
+  Args,
+  ID,
+  ObjectType,
+  Field,
+} from '@nestjs/graphql';
 import { Inject } from '@nestjs/common';
 import { plainToClass } from 'class-transformer';
 
@@ -15,6 +24,17 @@ import { Author } from 'src/domain/author/author.entity';
 // import { ICacheService } from 'src/domain/cache/interfaces';
 import { authorCacheKey } from '../cache/cache-keys';
 import { MultiLevelCacheService } from '../cache/multi-level-cache.service';
+
+@ObjectType()
+export class CacheEntry {
+  @Field()
+  key: string;
+
+  // we’re stringifying unknown values here; if you want raw JSON,
+  // install `graphql-type-json` and use @Field(() => GraphQLJSON)
+  @Field(() => String, { nullable: true })
+  value: string | null;
+}
 
 @Resolver(() => AuthorGQL)
 export class AuthorResolver {
@@ -48,11 +68,19 @@ export class AuthorResolver {
     return result;
   }
 
-  @Query(() => [String], { name: 'cacheKeys' })
-  debugCacheKeys(): string[] {
-    const keys = this.cache.debugL1Keys();
+  @Query(() => [CacheEntry], { name: 'cacheKeys' })
+  async debugCacheKeys(): Promise<[CacheEntry]> {
+    const keys = this.cache.debugL1Entries();
+    const test = await this.cache.get('test2');
     console.log('🔥 L1 cache keys:', keys);
-    return keys;
+    console.log('test:', test);
+    return keys as any;
+  }
+
+  @Mutation(() => Boolean)
+  async setCache(@Args('input') input: string) {
+    await this.cache.set('test2', input);
+    return true;
   }
 
   @Query(() => AuthorGQL, { name: 'author', nullable: true })

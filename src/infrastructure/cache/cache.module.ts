@@ -12,7 +12,7 @@ import { AppConfigModule } from '../config/app-config.module';
     // L1: in-memory
     CacheModule.register({
       store: 'memory',
-      ttl: Number(process.env.CACHE_TTL) || 30,
+      ttl: Number(process.env.CACHE_TTL_L1) || 30,
       max: 1000,
     }),
 
