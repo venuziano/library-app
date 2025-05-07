@@ -26,7 +26,8 @@ services:
       DATABASE: ${DATABASE}
       PASSWORD: ${DB_PASSWORD}
       REDIS_URL: ${REDIS_URL}
-      CACHE_TTL: ${CACHE_TTL}
+      CACHE_TTL_L1: ${CACHE_TTL_L1}
+      CACHE_TTL_L2: ${CACHE_TTL_L2}
 
   postgres:
     image: postgres:13-alpine

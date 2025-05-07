@@ -44,7 +44,11 @@ export class AppEnvConfigService {
     );
   }
 
-  get cacheTTL(): number {
-    return this.configService.getOrThrow<number>('CACHE_TTL', 120);
+  get cacheTTLL1(): number {
+    return this.configService.getOrThrow<number>('CACHE_TTL_L1', 10);
+  }
+
+  get cacheTTLL2(): number {
+    return this.configService.getOrThrow<number>('CACHE_TTL_L2', 120);
   }
 }

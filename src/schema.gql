@@ -29,6 +29,7 @@ type PaginatedAuthorsGQL {
 
 type Query {
   authors(limit: Int! = 50, page: Int! = 1, sort: String! = "createdAt", order: SortOrder! = ASC): PaginatedAuthorsGQL!
+  cacheKeys: [String!]!
   author(id: ID!): AuthorGQL
 }
 

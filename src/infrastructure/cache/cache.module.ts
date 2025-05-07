@@ -1,32 +1,30 @@
-import { Global, Module } from '@nestjs/common';
+import { Module, Global } from '@nestjs/common';
 import { CacheModule } from '@nestjs/cache-manager';
-import { createKeyv } from '@keyv/redis';
-
 import { RedisCheckService } from './redis-cache.service';
-import { cacheProviders } from './cache.providers';
-import { AppEnvConfigService } from '../config/environment-variables/app-env.config';
+import { MultiLevelCacheService } from './multi-level-cache.service';
 import { AppConfigModule } from '../config/app-config.module';
 
 @Global()
 @Module({
   imports: [
     AppConfigModule,
-    CacheModule.registerAsync({
-      imports: [AppConfigModule],
-      isGlobal: true,
-      inject: [AppEnvConfigService],
-      useFactory: (config: AppEnvConfigService) => {
-        const redisUrl = config.redisURL;
 
-        return {
-          ttl: config.cacheTTL,
-          stores: [createKeyv(redisUrl)],
-          keyPrefix: '',
-        };
-      },
+    // L1: in-memory
+    CacheModule.register({
+      store: 'memory',
+      ttl: Number(process.env.CACHE_TTL) || 30,
+      max: 1000,
     }),
+
+    // L2 is already imported in the RedisCheckService file
   ],
-  providers: [RedisCheckService, ...cacheProviders],
-  exports: [RedisCheckService, ...cacheProviders],
+  providers: [
+    RedisCheckService,
+    {
+      provide: 'ICacheService',
+      useClass: MultiLevelCacheService,
+    },
+  ],
+  exports: ['ICacheService'],
 })
 export class InfrastructureCacheModule {}
