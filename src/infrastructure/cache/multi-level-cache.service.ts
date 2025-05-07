@@ -58,9 +58,7 @@ export class MultiLevelCacheService implements ICacheService, OnModuleInit {
       }
 
       // Ignore messages you yourself sent
-      if (payload.origin === this.instanceId) {
-        return;
-      }
+      if (payload.origin === this.instanceId) return;
 
       // Invalidation logic on other instances
       const foundKey = new RegExp('^' + payload.key.replace(/\*/g, '.*') + '$');
@@ -85,16 +83,39 @@ export class MultiLevelCacheService implements ICacheService, OnModuleInit {
       },
     );
 
-    await this.redisClient.configSet('notify-keyspace-events', 'Egx');
+    // enable keyspace notifications
+    try {
+      await this.redisClient.configSet('notify-keyspace-events', 'Egx');
+    } catch (err) {
+      this.logger.error(`Failed to enable Redis keyspace-events: ${err}`);
+    }
   }
 
   async get<T = unknown>(key: string): Promise<T | undefined> {
-    const memory: T | undefined = this.l1Cache.get<T>(key);
-    if (memory != null) return memory;
+    const memory = this.l1Cache.get<T>(key);
+    if (memory != null) {
+      this.logger.debug(`L1 cache HIT for key "${key}"`);
+      return memory;
+    }
+    this.logger.debug(`L1 cache MISS for key "${key}"`);
 
-    const raw: string | null = await this.redisClient.get(key);
+    let raw: string | null;
+    try {
+      raw = await this.redisClient.get(key);
+    } catch (err) {
+      this.logger.error(`Redis GET failed for "${key}": ${err}`);
+      return undefined;
+    }
+
     if (raw != null) {
-      const value: T = JSON.parse(raw) as T;
+      let value: T;
+      try {
+        value = JSON.parse(raw) as T;
+      } catch (err) {
+        this.logger.error(`Failed to JSON.parse value for "${key}": ${err}`);
+        return undefined;
+      }
+
       this.l1Cache.set(key, value, this.defaultTTL);
       return value;
     }
@@ -102,24 +123,45 @@ export class MultiLevelCacheService implements ICacheService, OnModuleInit {
     return undefined;
   }
 
+  // async get<T = unknown>(key: string): Promise<T | undefined> {
+  //   const memory: T | undefined = this.l1Cache.get<T>(key);
+  //   if (memory != null) return memory;
+
+  //   const raw: string | null = await this.redisClient.get(key);
+  //   if (raw != null) {
+  //     const value: T = JSON.parse(raw) as T;
+  //     this.l1Cache.set(key, value, this.defaultTTL);
+  //     return value;
+  //   }
+
+  //   return undefined;
+  // }
+
   async set(key: string, value: unknown, ttl?: number): Promise<void> {
     const effectiveTTL: number = ttl ?? this.defaultTTL;
     this.l1Cache.set(key, value, effectiveTTL);
-    await this.redisClient.set(key, JSON.stringify(value), {
-      EX: this.cacheTTLL2,
-    });
 
-    // Publish with origin so you don’t evict your own write
-    await this.redisClient.publish(
-      'cache-invalidate',
-      JSON.stringify({ key, origin: this.instanceId }),
-    );
+    try {
+      await this.redisClient.set(key, JSON.stringify(value), {
+        EX: this.cacheTTLL2,
+      });
+      await this.redisClient.publish(
+        'cache-invalidate',
+        JSON.stringify({ key, origin: this.instanceId }),
+      );
+    } catch (err) {
+      this.logger.error(`Redis SET/PUBLISH failed for "${key}": ${err}`);
+    }
   }
 
   async del(key: string): Promise<void> {
     this.l1Cache.del(key);
-    await this.redisClient.del(key);
-    await this.redisClient.publish('cache-invalidate', key);
+    try {
+      await this.redisClient.del(key);
+      await this.redisClient.publish('cache-invalidate', key);
+    } catch (err) {
+      this.logger.error(`Redis DEL/PUBLISH failed for "${key}": ${err}`);
+    }
   }
 
   async invalidate(pattern: string): Promise<void> {
@@ -133,19 +175,33 @@ export class MultiLevelCacheService implements ICacheService, OnModuleInit {
 
     let cursor = 0;
     do {
-      const result = await this.redisClient.scan(cursor, {
-        MATCH: pattern,
-        COUNT: 100,
-      });
-
-      for (const k of result.keys) {
-        await this.redisClient.del(k);
+      try {
+        const { cursor: nextCursor, keys } = await this.redisClient.scan(
+          cursor,
+          {
+            MATCH: pattern,
+            COUNT: 100,
+          },
+        );
+        for (const k of keys) {
+          await this.redisClient.del(k);
+        }
+        cursor = nextCursor;
+      } catch (err) {
+        this.logger.error(
+          `Redis SCAN/DEL failed in invalidate("${pattern}"): ${err}`,
+        );
+        break;
       }
-
-      cursor = result.cursor;
     } while (cursor !== 0);
 
-    await this.redisClient.publish('cache-invalidate', pattern);
+    try {
+      await this.redisClient.publish('cache-invalidate', pattern);
+    } catch (err) {
+      this.logger.error(
+        `Redis PUBLISH failed for invalidate("${pattern}"): ${err}`,
+      );
+    }
   }
 
   public debugL1Keys(): string[] {
