@@ -39,7 +39,7 @@ export class AuthorRepositoryImpl implements AuthorRepository {
     const [entities, totalItems] =
       await this.authorRepository.findAndCount(query);
 
-    const items = entities.map((entity) => this.toDomain(entity));
+    const items: Author[] = entities.map((entity) => this.toDomain(entity));
 
     return new PaginationResult(
       items,
@@ -50,24 +50,28 @@ export class AuthorRepositoryImpl implements AuthorRepository {
   }
 
   async findById(id: number): Promise<Author | null> {
-    const foundAuthor = await this.authorRepository.findOne({ where: { id } });
+    const foundAuthor: AuthorOrm | null = await this.authorRepository.findOne({
+      where: { id },
+    });
     return foundAuthor ? this.toDomain(foundAuthor) : null;
   }
 
   async findByFirstname(firstname: string): Promise<Author | null> {
-    const foundAuthor = await this.authorRepository.findOne({
+    const foundAuthor: AuthorOrm | null = await this.authorRepository.findOne({
       where: { firstname },
     });
     return foundAuthor ? this.toDomain(foundAuthor) : null;
   }
 
   async create(author: Author): Promise<Author> {
-    const newAuthor = this.authorRepository.create({
+    const newAuthor: AuthorOrm = this.authorRepository.create({
       firstname: author.firstname,
       lastname: author.lastname,
     });
-    const createdAuthor = await this.authorRepository.save(newAuthor);
-    // return this.toDomain(createdAuthor);
+
+    const createdAuthor: AuthorOrm =
+      await this.authorRepository.save(newAuthor);
+
     return Author.reconstitute({
       id: createdAuthor.id,
       firstname: createdAuthor.firstname,

@@ -1,6 +1,5 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import * as NodeCache from 'node-cache';
+import NodeCache from 'node-cache';
 import { RedisCheckService } from './redis-cache.service';
 import { randomUUID } from 'crypto';
 
@@ -12,6 +11,8 @@ interface IDebugL1EntriesProperties {
   key: string;
   value: unknown;
 }
+
+type InvalidatePayload = { key: string; origin: string };
 
 @Injectable()
 export class MultiLevelCacheService implements ICacheService, OnModuleInit {
@@ -51,7 +52,7 @@ export class MultiLevelCacheService implements ICacheService, OnModuleInit {
     await this.redisSubClient.subscribe('cache-invalidate', (msg: string) => {
       let payload: { key: string; origin: string };
       try {
-        payload = JSON.parse(msg);
+        payload = JSON.parse(msg) as InvalidatePayload;
       } catch {
         this.logger.warn(`Invalid cache-invalidate message: ${msg}`);
         return;
