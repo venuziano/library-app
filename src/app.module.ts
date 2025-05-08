@@ -1,6 +1,6 @@
 import { Logger, Module } from '@nestjs/common';
 import { GraphQLModule } from '@nestjs/graphql';
-import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { ApolloDriver } from '@nestjs/apollo';
 import { join } from 'path';
 import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default';
 import { GraphQLError } from 'graphql';
@@ -22,23 +22,29 @@ const gqlLogger: Logger = new Logger('GraphQL');
     InfrastructureCacheModule,
     LoggingModule,
 
-    GraphQLModule.forRoot<ApolloDriverConfig>({
+    GraphQLModule.forRoot({
       driver: ApolloDriver,
       // automatically generate schema.gql next to your compiled code:
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
       playground: false,
       path: '/graphql',
-      // new Apollo Sandbox landing page
+      dateScalarMode: 'isoDate',
+      // Apollo Sandbox landing page
       plugins: [
         ApolloServerPluginLandingPageLocalDefault({
           /* other options? */
         }),
       ],
       formatError: (error: GraphQLError) => {
-        const exception = error.extensions?.exception as Error | undefined;
-        const trace = exception?.stack;
+        const path = error.path?.join('.') ?? 'unknownPath';
+        const locs =
+          (error.locations ?? [])
+            .map(({ line, column }) => `${line}:${column}`)
+            .join(', ') || 'unknownLoc';
 
-        gqlLogger.error(`Validation error: ${error.message}`, trace, 'GraphQL');
+        gqlLogger.error(
+          `ValidationError on "${path}" at [${locs}]: ${error.message}`,
+        );
         return error;
       },
     }),

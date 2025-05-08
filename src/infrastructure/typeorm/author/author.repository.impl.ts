@@ -29,10 +29,11 @@ export class AuthorRepositoryImpl implements AuthorRepository {
   }
 
   async findAll(properties: Pagination): Promise<PaginationResult<Author>> {
+    console.log('properties', properties);
     const query: FindManyOptions<AuthorOrm> = {
       take: properties.limit,
       skip: properties.offset,
-      order: { id: 'DESC' },
+      order: { [properties.sortBy]: properties.order },
       select: ['id', 'firstname', 'lastname', 'createdAt', 'updatedAt'],
     };
 

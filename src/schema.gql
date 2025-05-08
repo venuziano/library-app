@@ -33,7 +33,7 @@ type CacheEntry {
 }
 
 type Query {
-  authors(limit: Int! = 50, page: Int! = 1, sort: String! = "createdAt", order: SortOrder! = ASC): PaginatedAuthorsGQL!
+  authors(limit: Int! = 50, page: Int! = 1, sort: String! = "createdAt", order: SortOrder! = DESC): PaginatedAuthorsGQL!
   author(id: ID!): AuthorGQL
   cacheKeys: [CacheEntry!]!
 }

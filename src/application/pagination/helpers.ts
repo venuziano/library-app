@@ -11,7 +11,7 @@ registerEnumType(SortOrder, {
 });
 
 export const defaultSortField: string = 'createdAt';
-export const defaultSortOrder: SortOrder = SortOrder.ASC;
+export const defaultSortOrder: SortOrder = SortOrder.DESC;
 export const defaultPaginationValue: number = 50;
 
 export const calculateOffset = (page: number, limit: number): number =>

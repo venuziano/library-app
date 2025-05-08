@@ -26,7 +26,6 @@ export class AuthorResolver {
     const { limit, page, sort, order } = pagination;
 
     const cacheKey: string = `${authorCacheKey}:limit=${limit}:page=${page}:sort=${sort}:order=${order}`;
-    console.log('🔥 L1 keys:', this.cache.debugL1Keys());
 
     const cached: PaginatedAuthorsGQL | undefined =
       await this.cache.get<PaginatedAuthorsGQL>(cacheKey);
