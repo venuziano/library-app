@@ -144,7 +144,10 @@ export class MultiLevelCacheService implements ICacheService, OnModuleInit {
     this.l1Cache.del(key);
     try {
       await this.redisClient.del(key);
-      await this.redisClient.publish('cache-invalidate', key);
+      await this.redisClient.publish(
+        'cache-invalidate',
+        JSON.stringify({ key, origin: this.instanceId }),
+      );
     } catch (err) {
       this.logger.error(`Redis DEL/PUBLISH failed for "${key}": ${err}`);
     }
@@ -182,7 +185,10 @@ export class MultiLevelCacheService implements ICacheService, OnModuleInit {
     } while (cursor !== 0);
 
     try {
-      await this.redisClient.publish('cache-invalidate', pattern);
+      await this.redisClient.publish(
+        'cache-invalidate',
+        JSON.stringify({ key: pattern, origin: this.instanceId }),
+      );
     } catch (err) {
       this.logger.error(
         `Redis PUBLISH failed for invalidate("${pattern}"): ${err}`,

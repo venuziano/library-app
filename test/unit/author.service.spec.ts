@@ -2,8 +2,8 @@
 import { ConflictException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 
-import { AuthorService } from '../src/application/author/author.service';
-import { Author } from '../src/domain/author/author.entity';
+import { AuthorService } from '../../src/application/author/author.service';
+import { Author } from '../../src/domain/author/author.entity';
 
 describe('AuthorService', () => {
   let svc: AuthorService;
