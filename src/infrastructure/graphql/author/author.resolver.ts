@@ -1,40 +1,16 @@
-/* eslint-disable @typescript-eslint/no-unsafe-return */
-import {
-  Resolver,
-  Query,
-  Mutation,
-  Args,
-  ID,
-  ObjectType,
-  Field,
-} from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, ID } from '@nestjs/graphql';
 import { Inject } from '@nestjs/common';
 import { plainToClass } from 'class-transformer';
 
-import { AuthorService } from '../../application/author/author.service';
-import {
-  AuthorGQL,
-  PaginatedAuthorsGQL,
-} from '../graphql-types/author/author.gql';
-import { CreateAuthorInput } from '../graphql-types/author/create-author.input';
-import { toPaginatedGQL } from '../graphql-types/shared/pagination.output.gql';
-import { PaginationGQL } from '../graphql-types/shared/pagination.input.gql';
+import { AuthorService } from '../../../application/author/author.service';
+import { AuthorGQL, PaginatedAuthorsGQL } from './types/author.gql';
+import { CreateAuthorInput } from './types/create-author.input';
+import { toPaginatedGQL } from '../shared/pagination.output.gql';
+import { PaginationGQL } from '../shared/pagination.input.gql';
 import { PaginationResult } from 'src/domain/pagination/pagination.entity';
 import { Author } from 'src/domain/author/author.entity';
-// import { ICacheService } from 'src/domain/cache/interfaces';
-import { authorCacheKey } from '../cache/cache-keys';
-import { MultiLevelCacheService } from '../cache/multi-level-cache.service';
-
-@ObjectType()
-export class CacheEntry {
-  @Field()
-  key: string;
-
-  // we’re stringifying unknown values here; if you want raw JSON,
-  // install `graphql-type-json` and use @Field(() => GraphQLJSON)
-  @Field(() => String, { nullable: true })
-  value: string | null;
-}
+import { authorCacheKey } from '../../cache/cache-keys';
+import { MultiLevelCacheService } from '../../cache/multi-level-cache.service';
 
 @Resolver(() => AuthorGQL)
 export class AuthorResolver {
@@ -66,21 +42,6 @@ export class AuthorResolver {
     await this.cache.set(cacheKey, result);
 
     return result;
-  }
-
-  @Query(() => [CacheEntry], { name: 'cacheKeys' })
-  async debugCacheKeys(): Promise<[CacheEntry]> {
-    const keys = this.cache.debugL1Entries();
-    const test = await this.cache.get('test2');
-    console.log('🔥 L1 cache keys:', keys);
-    console.log('test:', test);
-    return keys as any;
-  }
-
-  @Mutation(() => Boolean)
-  async setCache(@Args('input') input: string) {
-    await this.cache.set('test2', input);
-    return true;
   }
 
   @Query(() => AuthorGQL, { name: 'author', nullable: true })

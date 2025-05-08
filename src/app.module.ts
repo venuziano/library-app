@@ -7,6 +7,7 @@ import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin
 import { AuthorModule } from './modules/author.module';
 import { DatabaseModule } from './infrastructure/database/database.module';
 import { InfrastructureCacheModule } from './infrastructure/cache/cache.module';
+import { CacheModule } from './modules/cache.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { InfrastructureCacheModule } from './infrastructure/cache/cache.module';
 
     // Application modules
     AuthorModule,
+    CacheModule,
   ],
 })
 export class AppModule {}

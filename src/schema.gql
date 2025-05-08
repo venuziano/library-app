@@ -34,8 +34,8 @@ type CacheEntry {
 
 type Query {
   authors(limit: Int! = 50, page: Int! = 1, sort: String! = "createdAt", order: SortOrder! = ASC): PaginatedAuthorsGQL!
-  cacheKeys: [CacheEntry!]!
   author(id: ID!): AuthorGQL
+  cacheKeys: [CacheEntry!]!
 }
 
 """Sort direction (ascending or descending)"""
@@ -45,8 +45,8 @@ enum SortOrder {
 }
 
 type Mutation {
-  setCache(input: String!): Boolean!
   createAuthor(input: CreateAuthorInput!): AuthorGQL!
+  setCache(input: String!): Boolean!
 }
 
 input CreateAuthorInput {
