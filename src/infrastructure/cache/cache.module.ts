@@ -3,6 +3,7 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { RedisCheckService } from './redis-cache.service';
 import { MultiLevelCacheService } from './multi-level-cache.service';
 import { AppConfigModule } from '../config/app-config.module';
+import { AppEnvConfigService } from '../config/environment-variables/app-env.config';
 
 @Global()
 @Module({
@@ -10,10 +11,14 @@ import { AppConfigModule } from '../config/app-config.module';
     AppConfigModule,
 
     // L1: in-memory
-    CacheModule.register({
-      store: 'memory',
-      ttl: Number(process.env.CACHE_TTL_L1) || 30,
-      max: 1000,
+    CacheModule.registerAsync({
+      imports: [AppConfigModule],
+      inject: [AppEnvConfigService],
+      useFactory: (config: AppEnvConfigService) => ({
+        store: 'memory',
+        ttl: config.cacheTTLL1,
+        max: 1000,
+      }),
     }),
 
     // L2 is already imported in the RedisCheckService file
