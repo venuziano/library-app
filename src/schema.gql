@@ -11,7 +11,7 @@ type PageInfoGQL {
 type AuthorGQL {
   createdAt: DateTime!
   updatedAt: DateTime!
-  deletedAt: DateTime!
+  deletedAt: DateTime
   id: ID!
   firstname: String!
   lastname: String!
@@ -33,7 +33,7 @@ type CacheEntry {
 }
 
 type Query {
-  authors(limit: Int! = 50, page: Int! = 1, sort: String! = "createdAt", order: SortOrder! = DESC): PaginatedAuthorsGQL!
+  authors(limit: Int! = 50, page: Int! = 1, sort: String! = "createdAt", searchTerm: String, order: SortOrder! = DESC): PaginatedAuthorsGQL!
   author(id: ID!): AuthorGQL
   cacheKeys: [CacheEntry!]!
 }

@@ -1,13 +1,17 @@
-import { ObjectType, Field } from '@nestjs/graphql';
+import { ObjectType, Field, GraphQLISODateTime } from '@nestjs/graphql';
+import { Type } from 'class-transformer';
 
 @ObjectType()
 export class CommonDatesGQL {
-  @Field()
+  @Field(() => GraphQLISODateTime)
+  @Type(() => Date)
   createdAt: Date;
 
-  @Field()
+  @Field(() => GraphQLISODateTime)
+  @Type(() => Date)
   updatedAt: Date;
 
-  @Field()
+  @Field(() => GraphQLISODateTime, { nullable: true })
+  @Type(() => Date)
   deletedAt: Date;
 }

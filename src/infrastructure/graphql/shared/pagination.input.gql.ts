@@ -18,6 +18,9 @@ export class PaginationGQL {
   @Field(() => String, { defaultValue: defaultSortField })
   sort!: string;
 
+  @Field(() => String, { nullable: true })
+  searchTerm?: string;
+
   @Field(() => SortOrder, { defaultValue: defaultSortOrder })
   order!: SortOrder;
 }

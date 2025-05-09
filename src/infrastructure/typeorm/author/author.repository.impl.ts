@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { FindManyOptions, Repository } from 'typeorm';
+import { FindManyOptions, ILike, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { AuthorOrm } from './author.orm-entity';
@@ -29,12 +29,19 @@ export class AuthorRepositoryImpl implements AuthorRepository {
   }
 
   async findAll(properties: Pagination): Promise<PaginationResult<Author>> {
-    console.log('properties', properties);
+    const { searchTerm } = properties;
+    console.log('searchTerm', searchTerm);
     const query: FindManyOptions<AuthorOrm> = {
       take: properties.limit,
       skip: properties.offset,
       order: { [properties.sortBy]: properties.order },
       select: ['id', 'firstname', 'lastname', 'createdAt', 'updatedAt'],
+      where: searchTerm
+        ? [
+            { firstname: ILike(`%${searchTerm}%`) },
+            { lastname: ILike(`%${searchTerm}%`) },
+          ]
+        : undefined,
     };
 
     const [entities, totalItems] =

@@ -23,6 +23,11 @@ export class PaginationDto {
   sort = defaultSortField;
 
   @IsOptional()
+  @Type(() => String)
+  @IsString()
+  searchTerm?: string;
+
+  @IsOptional()
   @IsEnum(SortOrder, { message: 'order must be ASC or DESC' })
   order: SortOrder = defaultSortOrder;
 }

@@ -23,13 +23,14 @@ export class AuthorResolver {
   async authors(
     @Args() pagination: PaginationGQL,
   ): Promise<PaginatedAuthorsGQL> {
-    const { limit, page, sort, order } = pagination;
+    const { limit, page, sort, order, searchTerm } = pagination;
 
-    const cacheKey: string = `${authorCacheKey}:limit=${limit}:page=${page}:sort=${sort}:order=${order}`;
+    const cacheKey: string = `${authorCacheKey}:limit=${limit}:page=${page}:sort=${sort}:order=${order}:searchTerm=${searchTerm}`;
 
     const cached: PaginatedAuthorsGQL | undefined =
       await this.cache.get<PaginatedAuthorsGQL>(cacheKey);
-    if (cached) return cached;
+
+    if (cached) return plainToClass(PaginatedAuthorsGQL, cached);
 
     const authors: PaginationResult<Author> =
       await this.authorService.findAll(pagination);

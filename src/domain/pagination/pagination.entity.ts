@@ -6,18 +6,21 @@ export class Pagination {
   readonly sortBy: string;
   readonly order: SortOrder;
   readonly page: number;
+  readonly searchTerm: string | undefined;
 
   private constructor(
     limit: number,
     page: number,
     sortBy: string,
     order: SortOrder,
+    searchTerm: string | undefined,
   ) {
     this.limit = limit;
     this.offset = calculateOffset(limit, page);
     this.sortBy = sortBy;
     this.order = order;
     this.page = page;
+    this.searchTerm = searchTerm;
   }
 
   static of(
@@ -25,8 +28,9 @@ export class Pagination {
     page: number,
     sortBy: string,
     order: SortOrder,
+    searchTerm: string | undefined,
   ): Pagination {
-    return new Pagination(limit, page, sortBy, order);
+    return new Pagination(limit, page, sortBy, order, searchTerm);
   }
 }
 
