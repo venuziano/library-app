@@ -4,6 +4,8 @@ import { RedisCheckService } from './redis-cache.service';
 import { MultiLevelCacheService } from './multi-level-cache.service';
 import { AppConfigModule } from '../config/app-config.module';
 import { AppEnvConfigService } from '../config/environment-variables/app-env.config';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { CacheableInterceptor } from './cacheable.interceptor';
 
 @Global()
 @Module({
@@ -25,9 +27,14 @@ import { AppEnvConfigService } from '../config/environment-variables/app-env.con
   ],
   providers: [
     RedisCheckService,
+    MultiLevelCacheService,
     {
       provide: 'ICacheService',
       useClass: MultiLevelCacheService,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: CacheableInterceptor,
     },
   ],
   exports: ['ICacheService'],

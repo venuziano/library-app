@@ -207,4 +207,25 @@ export class MultiLevelCacheService implements ICacheService, OnModuleInit {
       value: this.l1Cache.get(key),
     }));
   }
+
+  /**
+   * Try to get T from cache under `key`; if missing, call `fetchFn()`,
+   * cache its result (with optional ttl), and return it.
+   * TODO: missing unit test
+   */
+  // async wrap<T>(
+  //   key: string,
+  //   fetchFn: () => Promise<T>,
+  //   ttl?: number,
+  // ): Promise<T> {
+  //   const cached = await this.get<T>(key);
+  //   if (cached !== undefined) {
+  //     this.logger.debug(`Cache HIT for "${key}"`);
+  //     return cached;
+  //   }
+  //   this.logger.debug(`Cache MISS for "${key}"`);
+  //   const data = await fetchFn();
+  //   await this.set(key, data, ttl);
+  //   return data;
+  // }
 }
