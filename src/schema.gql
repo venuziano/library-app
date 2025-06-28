@@ -46,10 +46,17 @@ enum SortOrder {
 
 type Mutation {
   createAuthor(input: CreateAuthorInput!): AuthorGQL!
+  updateAuthor(input: UpdateAuthorInput!): AuthorGQL!
   setCache(input: String!): Boolean!
 }
 
 input CreateAuthorInput {
   firstname: String!
   lastname: String!
+}
+
+input UpdateAuthorInput {
+  firstname: String!
+  lastname: String!
+  id: Int!
 }

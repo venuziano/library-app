@@ -1,4 +1,4 @@
-import { Injectable, Inject, ConflictException } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 
 import { Author } from '../../domain/author/author.entity';
 import { AuthorRepository } from '../../domain/author/author.repository';
@@ -8,8 +8,16 @@ import {
   Pagination,
   PaginationResult,
 } from 'src/domain/pagination/pagination.entity';
-import { Cacheable } from 'src/infrastructure/cache/cacheable.decorator';
+import {
+  Cacheable,
+  InvalidateCache,
+} from 'src/infrastructure/cache/cache.decorator';
 import { MultiLevelCacheService } from 'src/infrastructure/cache/multi-level-cache.service';
+import {
+  authorByIdKey,
+  authorCacheKey,
+} from 'src/infrastructure/cache/cache-keys';
+import { UpdateAuthorDto } from './dtos/update-author.dto';
 
 @Injectable()
 export class AuthorService {
@@ -19,7 +27,7 @@ export class AuthorService {
     public readonly cache: MultiLevelCacheService,
   ) {}
 
-  @Cacheable({ namespace: 'authors' })
+  @Cacheable({ namespace: authorCacheKey })
   findAll(properties: PaginationDto): Promise<PaginationResult<Author>> {
     const { limit, page, sort, order, searchTerm } = properties;
     const pagination: Pagination = Pagination.of(
@@ -32,23 +40,25 @@ export class AuthorService {
     return this.authorRepository.findAll(pagination);
   }
 
+  @Cacheable({ namespace: authorByIdKey })
   findById(id: number): Promise<Author | null> {
     return this.authorRepository.findById(id);
   }
 
+  @InvalidateCache({ namespace: authorCacheKey })
   async create(dto: CreateAuthorDto): Promise<Author> {
-    const existing: Author | null = await this.authorRepository.findByFirstname(
-      dto.firstname,
-    );
-
-    if (existing) {
-      throw new ConflictException('Author already exists');
-    }
-
     const author = Author.create({
       firstname: dto.firstname,
       lastname: dto.lastname,
     });
     return this.authorRepository.create(author);
+  }
+
+  @InvalidateCache({ namespace: [authorByIdKey, authorCacheKey] })
+  async update(dto: UpdateAuthorDto): Promise<Author | null> {
+    const existing = await this.findById(dto.id);
+    if (!existing) return null;
+    existing.update(dto.firstname!, dto.lastname!);
+    return this.authorRepository.update(existing);
   }
 }

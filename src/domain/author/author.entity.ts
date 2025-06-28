@@ -19,6 +19,15 @@ export class Author {
     );
   }
 
+  update(firstname: string, lastname: string) {
+    if (!firstname || !lastname) {
+      throw new Error('firstname and lastname cannot be empty');
+    }
+    this.firstname = firstname;
+    this.lastname = lastname;
+    this.updatedAt = new Date();
+  }
+
   // rehydrating from persistence
   static reconstitute(properties: {
     id: number;

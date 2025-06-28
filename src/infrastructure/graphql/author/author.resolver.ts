@@ -1,5 +1,4 @@
 import { Resolver, Query, Mutation, Args, ID } from '@nestjs/graphql';
-import { Inject } from '@nestjs/common';
 import { plainToClass } from 'class-transformer';
 import { NotFoundException } from '@nestjs/common';
 
@@ -8,15 +7,11 @@ import { AuthorGQL, PaginatedAuthorsGQL } from './types/author.gql';
 import { CreateAuthorInput } from './types/create-author.input';
 import { toPaginatedGQL } from '../shared/pagination.output.gql';
 import { PaginationGQL } from '../shared/pagination.input.gql';
-import { authorCacheKey } from '../../cache/cache-keys';
-import { MultiLevelCacheService } from '../../cache/multi-level-cache.service';
+import { UpdateAuthorInput } from './types/update-author.input';
 
 @Resolver(() => AuthorGQL)
 export class AuthorResolver {
-  constructor(
-    private readonly authorService: AuthorService,
-    @Inject('ICacheService') private readonly cache: MultiLevelCacheService,
-  ) {}
+  constructor(private readonly authorService: AuthorService) {}
 
   @Query(() => PaginatedAuthorsGQL, { name: 'authors' })
   async authors(
@@ -37,12 +32,17 @@ export class AuthorResolver {
 
   @Mutation(() => AuthorGQL)
   async createAuthor(@Args('input') input: CreateAuthorInput) {
-    const createdAuthor = await this.authorService.create(input);
-    if (createdAuthor != null)
-      await this.cache.invalidate(`${authorCacheKey}:*`);
-    return createdAuthor;
+    return await this.authorService.create(input);
   }
 
+  @Mutation(() => AuthorGQL)
+  async updateAuthor(@Args('input') input: UpdateAuthorInput) {
+    const createdAuthor = await this.authorService.update(input);
+    if (!createdAuthor) {
+      throw new NotFoundException(`Author not found`);
+    }
+    return createdAuthor;
+  }
   //update
   //delete, softDelete
   //patch

@@ -64,13 +64,6 @@ export class AuthorRepositoryImpl implements AuthorRepository {
     return foundAuthor ? this.toDomain(foundAuthor) : null;
   }
 
-  async findByFirstname(firstname: string): Promise<Author | null> {
-    const foundAuthor: AuthorOrm | null = await this.authorRepository.findOne({
-      where: { firstname },
-    });
-    return foundAuthor ? this.toDomain(foundAuthor) : null;
-  }
-
   async create(author: Author): Promise<Author> {
     const newAuthor: AuthorOrm = this.authorRepository.create({
       firstname: author.firstname,
@@ -87,6 +80,29 @@ export class AuthorRepositoryImpl implements AuthorRepository {
       createdAt: createdAuthor.createdAt,
       updatedAt: createdAuthor.updatedAt,
       deletedAt: createdAuthor.deletedAt,
+    });
+  }
+
+  async update(author: Author): Promise<Author | null> {
+    const toUpdate: AuthorOrm | undefined = await this.authorRepository.preload(
+      {
+        id: author.id!,
+        firstname: author.firstname,
+        lastname: author.lastname,
+      },
+    );
+
+    if (!toUpdate) return null;
+
+    const updatedOrm: AuthorOrm = await this.authorRepository.save(toUpdate);
+
+    return Author.reconstitute({
+      id: updatedOrm.id,
+      firstname: updatedOrm.firstname,
+      lastname: updatedOrm.lastname,
+      createdAt: updatedOrm.createdAt,
+      updatedAt: updatedOrm.updatedAt,
+      deletedAt: updatedOrm.deletedAt,
     });
   }
 }
