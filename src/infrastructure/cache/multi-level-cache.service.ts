@@ -108,20 +108,25 @@ export class MultiLevelCacheService implements ICacheService, OnModuleInit {
       return undefined;
     }
 
-    if (raw != null) {
-      let value: T;
-      try {
-        value = JSON.parse(raw) as T;
-      } catch (err) {
-        this.logger.error(`Failed to JSON.parse value for "${key}": ${err}`);
-        return undefined;
-      }
+    if (raw == null) return undefined;
 
-      this.l1Cache.set(key, value, this.defaultTTL);
-      return value;
+    const ISO_8601 = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
+
+    try {
+      // parse into unknown first
+      const data: unknown = JSON.parse(raw, (_k, v) =>
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+        typeof v === 'string' && ISO_8601.test(v) ? new Date(v) : v,
+      );
+      // now assert to T
+      const parsed = data as T;
+      // prime L1
+      this.l1Cache.set(key, parsed, this.defaultTTL);
+      return parsed;
+    } catch (err) {
+      this.logger.error(`Failed to JSON.parse & revive for "${key}": ${err}`);
+      return undefined;
     }
-
-    return undefined;
   }
 
   async set(key: string, value: unknown, ttl?: number): Promise<void> {
@@ -129,7 +134,8 @@ export class MultiLevelCacheService implements ICacheService, OnModuleInit {
     this.l1Cache.set(key, value, effectiveTTL);
 
     try {
-      await this.redisClient.set(key, JSON.stringify(value), {
+      const json = JSON.stringify(value);
+      await this.redisClient.set(key, json, {
         EX: this.cacheTTLL2,
       });
       await this.redisClient.publish(

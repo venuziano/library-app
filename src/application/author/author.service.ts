@@ -8,14 +8,18 @@ import {
   Pagination,
   PaginationResult,
 } from 'src/domain/pagination/pagination.entity';
+import { Cacheable } from 'src/infrastructure/cache/cacheable.decorator';
+import { MultiLevelCacheService } from 'src/infrastructure/cache/multi-level-cache.service';
 
 @Injectable()
 export class AuthorService {
   constructor(
     @Inject('AuthorRepository')
     private readonly authorRepository: AuthorRepository,
+    public readonly cache: MultiLevelCacheService,
   ) {}
 
+  @Cacheable({ namespace: 'authors' })
   findAll(properties: PaginationDto): Promise<PaginationResult<Author>> {
     const { limit, page, sort, order, searchTerm } = properties;
     const pagination: Pagination = Pagination.of(

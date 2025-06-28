@@ -2,7 +2,13 @@ import { ObjectType, Field, Int } from '@nestjs/graphql';
 import { Type } from 'class-transformer';
 import { PaginationResult } from 'src/domain/pagination/pagination.entity';
 
-type ClassType<T> = new (...args: any[]) => T;
+type PlainPagination<T> = {
+  items: T[];
+  page: number;
+  limit: number;
+  totalItems: number;
+  totalPages?: number;
+};
 
 @ObjectType()
 export class PageInfoGQL {
@@ -11,7 +17,7 @@ export class PageInfoGQL {
   @Field(() => Int) currentPage!: number;
 }
 
-export function Paginated<T>(TItemClass: ClassType<T>) {
+export function Paginated<T>(TItemClass: new () => T) {
   @ObjectType({ isAbstract: true })
   abstract class PaginatedType {
     @Field(() => [TItemClass], { name: 'items' })
@@ -23,16 +29,37 @@ export function Paginated<T>(TItemClass: ClassType<T>) {
   return PaginatedType;
 }
 
+/**
+ * Accepts either a real PaginationResult<T> (with its getter)
+ * or a plain object (e.g. from Redis) with an optional totalPages.
+ */
 export function toPaginatedGQL<T, GQL>(
-  result: PaginationResult<T>,
+  result: PaginationResult<T> | PlainPagination<T>,
   mapItem: (t: T) => GQL,
-) {
+): { items: GQL[]; pageInfo: PageInfoGQL } {
+  // map items
+  const items = result.items.map(mapItem);
+  // pull shared metadata
+  const currentPage = result.page;
+  const totalItems = result.totalItems;
+  const limit = result.limit;
+
+  // figure out totalPages without ever using 'any'
+  let totalPages: number;
+  if (result instanceof PaginationResult) {
+    // real instance → use its getter
+    totalPages = result.totalPages;
+  } else {
+    // plain shape → use what’s there or compute it
+    totalPages = result.totalPages ?? Math.ceil(totalItems / limit);
+  }
+
   return {
-    items: result.items.map(mapItem),
+    items,
     pageInfo: {
-      totalItems: result.totalItems,
-      totalPages: result.totalPages,
-      currentPage: result.page,
+      totalItems,
+      totalPages,
+      currentPage,
     },
   };
 }
