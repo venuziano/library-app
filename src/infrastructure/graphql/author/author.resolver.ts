@@ -37,4 +37,8 @@ export class AuthorResolver {
       await this.cache.invalidate(`${authorCacheKey}:*`);
     return createdAuthor;
   }
+
+  //update
+  //delete, softDelete
+  //patch
 }
