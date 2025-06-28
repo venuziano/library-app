@@ -30,7 +30,7 @@ export class AuthorRepositoryImpl implements AuthorRepository {
 
   async findAll(properties: Pagination): Promise<PaginationResult<Author>> {
     const { searchTerm } = properties;
-    console.log('searchTerm', searchTerm);
+
     const query: FindManyOptions<AuthorOrm> = {
       take: properties.limit,
       skip: properties.offset,

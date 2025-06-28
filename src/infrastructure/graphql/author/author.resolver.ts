@@ -1,6 +1,7 @@
 import { Resolver, Query, Mutation, Args, ID } from '@nestjs/graphql';
 import { Inject } from '@nestjs/common';
 import { plainToClass } from 'class-transformer';
+import { NotFoundException } from '@nestjs/common';
 
 import { AuthorService } from '../../../application/author/author.service';
 import { AuthorGQL, PaginatedAuthorsGQL } from './types/author.gql';
@@ -26,8 +27,12 @@ export class AuthorResolver {
   }
 
   @Query(() => AuthorGQL, { name: 'author', nullable: true })
-  getById(@Args('id', { type: () => ID }) id: number) {
-    return this.authorService.findById(id);
+  async getById(@Args('id', { type: () => ID }) id: number) {
+    const author = await this.authorService.findById(id);
+    if (!author) {
+      throw new NotFoundException(`Author not found`);
+    }
+    return author;
   }
 
   @Mutation(() => AuthorGQL)

@@ -27,6 +27,7 @@ const gqlLogger: Logger = new Logger('GraphQL');
       // automatically generate schema.gql next to your compiled code:
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
       playground: false,
+      includeStacktraceInErrorResponses: process.env.NODE_ENV !== 'prod',
       path: '/graphql',
       dateScalarMode: 'isoDate',
       // Apollo Sandbox landing page

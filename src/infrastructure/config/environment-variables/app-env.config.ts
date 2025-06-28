@@ -51,4 +51,8 @@ export class AppEnvConfigService {
   get cacheTTLL2(): number {
     return this.configService.getOrThrow<number>('CACHE_TTL_L2', 120);
   }
+
+  get nodeEnv(): string {
+    return this.configService.getOrThrow<string>('NODE_ENV');
+  }
 }
