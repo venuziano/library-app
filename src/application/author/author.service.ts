@@ -42,7 +42,7 @@ export class AuthorService {
 
   @Cacheable({ namespace: authorByIdKey })
   async findById(id: number): Promise<Author | null> {
-    const author = await this.authorRepository.findById(id);
+    const author: Author | null = await this.authorRepository.findById(id);
     if (!author) {
       throw new NotFoundException(`Author not found`);
     }
@@ -51,19 +51,29 @@ export class AuthorService {
 
   @InvalidateCache({ namespace: authorCacheKey })
   async create(dto: CreateAuthorDto): Promise<Author> {
-    const author = Author.create({
+    const author: Author = Author.create({
       firstname: dto.firstname,
       lastname: dto.lastname,
     });
     return this.authorRepository.create(author);
   }
 
-  @InvalidateCache({ namespace: [authorByIdKey, authorCacheKey] })
+  @InvalidateCache({
+    namespace: [authorCacheKey],
+    keyGenerator: (dto: UpdateAuthorDto) => ({
+      // only invalidate the single-entity caches under authorByIdKey
+      [authorByIdKey]: dto.id.toString(),
+      // you could also target specific list caches by key, but here
+      // we let the wildcard invalidator clear authorCacheKey:*
+      // so no need to specify authorCacheKey here
+    }),
+  })
   async update(dto: UpdateAuthorDto): Promise<Author | null> {
-    const existing = await this.findById(dto.id);
-    if (!existing) {
+    const authorToUpdate: Author | null = await this.findById(dto.id);
+    if (!authorToUpdate) {
       throw new NotFoundException(`Author not found`);
     }
+    const existing = await this.authorRepository.create(authorToUpdate);
     existing.update(dto.firstname!, dto.lastname!);
     return this.authorRepository.update(existing);
   }

@@ -56,11 +56,11 @@ describe('@Cacheable decorator — additional scenarios', () => {
     const out = await svc.noOptions(3);
     expect(out).toBe(6);
 
-    expect(svc.cache.get).toHaveBeenCalledWith('noOptions:[3]');
-    expect(svc.cache.set).toHaveBeenCalledWith('noOptions:[3]', 6, undefined);
+    expect(svc.cache.get).toHaveBeenCalledWith('noOptions:3');
+    expect(svc.cache.set).toHaveBeenCalledWith('noOptions:3', 6, undefined);
   });
 
-  it('generates JSON keys (order matters!) for object arguments', async () => {
+  it('stringifies object args in call order', async () => {
     svc.cache.get.mockResolvedValue(undefined);
 
     const o1 = { x: 1, y: 2 };
@@ -69,8 +69,8 @@ describe('@Cacheable decorator — additional scenarios', () => {
     await svc.withObject(o1);
     await svc.withObject(o2);
 
-    expect(svc.cache.get).toHaveBeenNthCalledWith(1, 'objTest:[{"x":1,"y":2}]');
-    expect(svc.cache.get).toHaveBeenNthCalledWith(2, 'objTest:[{"y":2,"x":1}]');
+    expect(svc.cache.get).toHaveBeenNthCalledWith(1, 'objTest:{"x":1,"y":2}');
+    expect(svc.cache.get).toHaveBeenNthCalledWith(2, 'objTest:{"y":2,"x":1}');
   });
 
   it('bubbles errors from cache.get by default', async () => {

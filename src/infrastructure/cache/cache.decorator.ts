@@ -21,10 +21,18 @@ export function Cacheable(options: CacheableOptions = {}): MethodDecorator {
       // assume your service has a `cache: MultiLevelCacheService` property
       const cache: MultiLevelCacheService = this.cache;
       const ns = options.namespace ?? String(propertyKey);
-      const key = `${ns}:${JSON.stringify(args)}`;
+
+      // normalize every arg to a string
+      const keyArgs = args
+        .map((arg) =>
+          typeof arg === 'object' ? JSON.stringify(arg) : String(arg),
+        )
+        .join('|');
+
+      const cacheKey = `${ns}:${keyArgs}`;
 
       // 1) try cache
-      const hit = await cache.get(key);
+      const hit = await cache.get(cacheKey);
       if (hit !== undefined) {
         return hit;
       }
@@ -33,7 +41,7 @@ export function Cacheable(options: CacheableOptions = {}): MethodDecorator {
       const result = await original.apply(this, args);
 
       // 3) store in cache
-      await cache.set(key, result, options.ttl);
+      await cache.set(cacheKey, result, options.ttl);
 
       return result;
     };
@@ -41,52 +49,76 @@ export function Cacheable(options: CacheableOptions = {}): MethodDecorator {
 }
 
 export interface InvalidateCacheOptions {
-  /** Namespace to evict; defaults to the method name */
+  /**
+   * One or more namespaces to invalidate (wildcard)
+   */
   namespace?: string | string[];
   /**
-   * Optional function to compute specific keys to delete.
-   * If omitted, the decorator will delete *all* keys in the namespace.
+   * Return either:
+   * - a string or array of strings: keys to invalidate across all namespaces
+   * - a record mapping a namespace to a string or array of strings
    */
-  keyGenerator?: (...args: any[]) => string | string[];
+  keyGenerator?: (
+    ...args: any[]
+  ) => string | string[] | Record<string, string | string[]>;
 }
 
 export function InvalidateCache(
   options: InvalidateCacheOptions = {},
 ): MethodDecorator {
-  return function (
+  return (
     target: object,
     propertyKey: string | symbol,
     descriptor: TypedPropertyDescriptor<any>,
-  ) {
-    console.log('options', options);
-    const original = descriptor.value!;
+  ) => {
+    const originalMethod = descriptor.value!;
+
     descriptor.value = async function (...args: any[]) {
-      // 1) run the mutation
-      const result = await original.apply(this, args);
+      // 1) execute original
+      const result = await originalMethod.apply(this, args);
 
-      // 2) perform cache eviction
-      const cache: MultiLevelCacheService = this.cache;
+      // 2) prepare namespaces
       const rawNs = options.namespace ?? String(propertyKey);
-      const namespaces = Array.isArray(rawNs) ? rawNs : [rawNs];
+      const allNamespaces = Array.isArray(rawNs) ? rawNs : [rawNs];
 
-      await Promise.all(namespaces.map((ns) => cache.invalidate(`${ns}:*`)));
+      // 3) process keyGenerator output
+      const specificMap: Record<string, string[]> = {};
+      if (options.keyGenerator) {
+        const gen = options.keyGenerator(...args);
 
-      // if (options.keyGenerator) {
-      //   // delete only specific keys under each namespace
-      //   const generated = options.keyGenerator(...args);
-      //   console.log('generated', generated);
-      //   const keys = Array.isArray(generated) ? generated : [generated];
-      //   await Promise.all(
-      //     namespaces.flatMap((ns) =>
-      //       keys.map((key) => cache.invalidate(`${ns}:${key}`)),
-      //     ),
-      //   );
-      // } else {
-      //   // delete all keys matching each namespace prefix
-      //   await Promise.all(namespaces.map((ns) => cache.invalidate(`${ns}:*`)));
-      // }
+        if (gen && typeof gen === 'object' && !Array.isArray(gen)) {
+          // record form: { ns: key | [keys] }
+          for (const [ns, v] of Object.entries(gen)) {
+            specificMap[ns] = Array.isArray(v) ? v : [v];
+          }
+        } else {
+          // single or array apply to all namespaces
+          const keys = Array.isArray(gen) ? gen : [String(gen)];
+          for (const ns of allNamespaces) {
+            specificMap[ns] = keys;
+          }
+        }
+      }
 
+      const cache: MultiLevelCacheService = this.cache;
+      const tasks: Promise<any>[] = [];
+
+      // 4) invalidate specific keys
+      for (const [ns, keys] of Object.entries(specificMap)) {
+        for (const key of keys) {
+          tasks.push(cache.invalidate(`${ns}:${key}`));
+        }
+      }
+
+      // 5) invalidate wildcard on every namespace
+      for (const ns of allNamespaces) {
+        tasks.push(cache.invalidate(`${ns}:*`));
+      }
+
+      await Promise.all(tasks);
       return result;
     };
+
+    return descriptor;
   };
 }
