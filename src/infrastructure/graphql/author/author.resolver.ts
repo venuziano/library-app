@@ -1,6 +1,5 @@
 import { Resolver, Query, Mutation, Args, ID } from '@nestjs/graphql';
 import { plainToClass } from 'class-transformer';
-import { NotFoundException } from '@nestjs/common';
 
 import { AuthorService } from '../../../application/author/author.service';
 import { AuthorGQL, PaginatedAuthorsGQL } from './types/author.gql';
@@ -22,28 +21,19 @@ export class AuthorResolver {
   }
 
   @Query(() => AuthorGQL, { name: 'author', nullable: true })
-  async getById(@Args('id', { type: () => ID }) id: number) {
-    const author = await this.authorService.findById(id);
-    if (!author) {
-      throw new NotFoundException(`Author not found`);
-    }
-    return author;
+  getById(@Args('id', { type: () => ID }) id: number) {
+    return this.authorService.findById(id);
   }
 
   @Mutation(() => AuthorGQL)
-  async createAuthor(@Args('input') input: CreateAuthorInput) {
-    return await this.authorService.create(input);
+  createAuthor(@Args('input') input: CreateAuthorInput) {
+    return this.authorService.create(input);
   }
 
   @Mutation(() => AuthorGQL)
-  async updateAuthor(@Args('input') input: UpdateAuthorInput) {
-    const createdAuthor = await this.authorService.update(input);
-    if (!createdAuthor) {
-      throw new NotFoundException(`Author not found`);
-    }
-    return createdAuthor;
+  updateAuthor(@Args('input') input: UpdateAuthorInput) {
+    return this.authorService.update(input);
   }
-  //update
   //delete, softDelete
   //patch
 }

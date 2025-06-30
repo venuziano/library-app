@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 
 import { Author } from '../../domain/author/author.entity';
 import { AuthorRepository } from '../../domain/author/author.repository';
@@ -41,8 +41,12 @@ export class AuthorService {
   }
 
   @Cacheable({ namespace: authorByIdKey })
-  findById(id: number): Promise<Author | null> {
-    return this.authorRepository.findById(id);
+  async findById(id: number): Promise<Author | null> {
+    const author = await this.authorRepository.findById(id);
+    if (!author) {
+      throw new NotFoundException(`Author not found`);
+    }
+    return author;
   }
 
   @InvalidateCache({ namespace: authorCacheKey })
@@ -57,7 +61,9 @@ export class AuthorService {
   @InvalidateCache({ namespace: [authorByIdKey, authorCacheKey] })
   async update(dto: UpdateAuthorDto): Promise<Author | null> {
     const existing = await this.findById(dto.id);
-    if (!existing) return null;
+    if (!existing) {
+      throw new NotFoundException(`Author not found`);
+    }
     existing.update(dto.firstname!, dto.lastname!);
     return this.authorRepository.update(existing);
   }
