@@ -10,6 +10,7 @@ import { DatabaseModule } from './infrastructure/database/database.module';
 import { InfrastructureCacheModule } from './infrastructure/cache/cache.module';
 import { CacheModule } from './modules/cache.module';
 import { LoggingModule } from './infrastructure/logging/logging.module';
+import { CategoryModule } from './infrastructure/features/category/category.module';
 
 const gqlLogger: Logger = new Logger('GraphQL');
 
@@ -52,6 +53,7 @@ const gqlLogger: Logger = new Logger('GraphQL');
 
     // Application modules
     AuthorModule,
+    CategoryModule,
     CacheModule,
   ],
 })

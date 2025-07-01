@@ -6,7 +6,7 @@ import { UpdateAuthorInput } from './types/update-author.input';
 import { PatchAuthorInput } from './types/patch-author.input';
 import { PaginationGQL } from 'src/infrastructure/graphql/shared/pagination.input.gql';
 
-// Unit tests for AuthorResolver
+// Unit tests
 describe('AuthorResolver (unit)', () => {
   let resolver: AuthorResolver;
   let service: Partial<Record<keyof AuthorService, jest.Mock>>;
@@ -98,7 +98,7 @@ describe('AuthorResolver (unit)', () => {
   });
 });
 
-// Integration tests for AuthorResolver
+// Integration tests
 import { INestApplication } from '@nestjs/common';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
@@ -113,16 +113,29 @@ import { AuthorResolver } from './author.resolver';
 
 describe('AuthorResolver (integration)', () => {
   let app: INestApplication;
+  const nowIso = new Date().toISOString();
   const mockAuthors = [
-    { id: 1, firstname: 'Alice', lastname: 'Smith' },
-    { id: 2, firstname: 'Bob', lastname: 'Jones' },
+    {
+      id: 1,
+      firstname: 'Alice',
+      lastname: 'Smith',
+      createdAt: nowIso,
+      updatedAt: nowIso,
+    },
+    {
+      id: 2,
+      firstname: 'Bob',
+      lastname: 'Jones',
+      createdAt: nowIso,
+      updatedAt: nowIso,
+    },
   ];
   const paginated = {
     items: mockAuthors,
-    page: 2,
+    page: 1,
     limit: 10,
-    totalItems: 10,
-    totalPages: 2,
+    totalItems: 2,
+    totalPages: 1,
   };
 
   beforeAll(async () => {
@@ -181,15 +194,15 @@ describe('AuthorResolver (integration)', () => {
       });
   });
 
-  it('executes getByIdAuthor query', () => {
-    const query = `query($id: ID!) { getByIdAuthor(id: $id) { id firstname lastname } }`;
+  it('executes getAuthorById query', () => {
+    const query = `query($id: ID!) { getAuthorById(id: $id) { id firstname lastname } }`;
     return request(app.getHttpServer())
       .post('/graphql')
       .send({ query, variables: { id: 1 } })
       .expect(200)
       .expect((res) => {
-        expect(res.body.data.getByIdAuthor.id).toBe('1');
-        expect(res.body.data.getByIdAuthor.firstname).toBe('Alice');
+        expect(res.body.data.getAuthorById.id).toBe('1');
+        expect(res.body.data.getAuthorById.firstname).toBe('Alice');
       });
   });
 

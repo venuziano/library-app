@@ -79,9 +79,8 @@ export class AuthorService {
       () => this.authorRepository.findById(dto.id),
       authorNotFoundException(),
     );
-    const existing = await this.authorRepository.create(authorToUpdate);
-    existing.update(dto.firstname, dto.lastname);
-    return this.authorRepository.update(existing);
+    authorToUpdate.update(dto.firstname, dto.lastname);
+    return this.authorRepository.update(authorToUpdate);
   }
 
   @InvalidateCache({

@@ -29,7 +29,7 @@ type PaginatedAuthorsGQL {
 
 type Query {
   getAllAuthors(limit: Int! = 50, page: Int! = 1, sort: String! = "createdAt", searchTerm: String, order: SortOrder! = DESC): PaginatedAuthorsGQL!
-  getByIdAuthor(id: ID!): AuthorGQL
+  getAuthorById(id: ID!): AuthorGQL
 }
 
 """Sort direction (ascending or descending)"""
@@ -41,8 +41,8 @@ enum SortOrder {
 type Mutation {
   createAuthor(input: CreateAuthorInput!): AuthorGQL!
   updateAuthor(input: UpdateAuthorInput!): AuthorGQL!
-  deleteAuthor(id: Int!): AuthorGQL!
   patchAuthor(input: PatchAuthorInput!): AuthorGQL!
+  deleteAuthor(id: Int!): AuthorGQL!
 }
 
 input CreateAuthorInput {

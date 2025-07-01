@@ -21,7 +21,7 @@ export class AuthorResolver {
     return toPaginatedGQL(authors, (author) => plainToClass(AuthorGQL, author));
   }
 
-  @Query(() => AuthorGQL, { name: 'getByIdAuthor', nullable: true })
+  @Query(() => AuthorGQL, { name: 'getAuthorById', nullable: true })
   getById(@Args('id', { type: () => ID }) id: number) {
     return this.authorService.findById(id);
   }
@@ -36,13 +36,13 @@ export class AuthorResolver {
     return this.authorService.update(input);
   }
 
-  @Mutation(() => AuthorGQL, { name: 'deleteAuthor' })
-  async deleteAuthor(@Args('id', { type: () => Int }) id: number) {
-    return this.authorService.delete(id);
-  }
-
   @Mutation(() => AuthorGQL, { name: 'patchAuthor' })
   patchAuthor(@Args('input') input: PatchAuthorInput) {
     return this.authorService.patch(input);
+  }
+
+  @Mutation(() => AuthorGQL, { name: 'deleteAuthor' })
+  deleteAuthor(@Args('id', { type: () => Int }) id: number) {
+    return this.authorService.delete(id);
   }
 }
