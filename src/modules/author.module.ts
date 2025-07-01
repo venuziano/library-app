@@ -5,6 +5,7 @@ import { AuthorOrm } from '../infrastructure/typeorm/author/author.orm-entity';
 import { AuthorRepositoryImpl } from '../infrastructure/typeorm/author/author.repository.impl';
 import { AuthorService } from '../application/author/author.service';
 import { AuthorResolver } from '../infrastructure/graphql/author/author.resolver';
+import { EntityChecker } from 'src/application/shared/entity-checker.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([AuthorOrm])],
@@ -12,6 +13,7 @@ import { AuthorResolver } from '../infrastructure/graphql/author/author.resolver
     AuthorService,
     { provide: 'AuthorRepository', useClass: AuthorRepositoryImpl },
     AuthorResolver,
+    EntityChecker,
   ],
 })
 export class AuthorModule {}

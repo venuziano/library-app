@@ -33,8 +33,8 @@ type CacheEntry {
 }
 
 type Query {
-  authors(limit: Int! = 50, page: Int! = 1, sort: String! = "createdAt", searchTerm: String, order: SortOrder! = DESC): PaginatedAuthorsGQL!
-  author(id: ID!): AuthorGQL
+  getAllAuthors(limit: Int! = 50, page: Int! = 1, sort: String! = "createdAt", searchTerm: String, order: SortOrder! = DESC): PaginatedAuthorsGQL!
+  getByIdAuthor(id: ID!): AuthorGQL
   cacheKeys: [CacheEntry!]!
 }
 
@@ -47,6 +47,7 @@ enum SortOrder {
 type Mutation {
   createAuthor(input: CreateAuthorInput!): AuthorGQL!
   updateAuthor(input: UpdateAuthorInput!): AuthorGQL!
+  deleteAuthor(id: Int!): AuthorGQL!
   setCache(input: String!): Boolean!
 }
 

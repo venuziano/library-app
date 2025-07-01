@@ -6,4 +6,5 @@ export interface AuthorRepository {
   findById(id: number): Promise<Author | null>;
   create(author: Author): Promise<Author>;
   update(author: Author): Promise<Author | null>;
+  delete(author: Author): Promise<Author | null>;
 }

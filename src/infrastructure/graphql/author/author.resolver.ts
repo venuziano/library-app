@@ -1,4 +1,4 @@
-import { Resolver, Query, Mutation, Args, ID } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, ID, Int } from '@nestjs/graphql';
 import { plainToClass } from 'class-transformer';
 
 import { AuthorService } from '../../../application/author/author.service';
@@ -12,7 +12,7 @@ import { UpdateAuthorInput } from './types/update-author.input';
 export class AuthorResolver {
   constructor(private readonly authorService: AuthorService) {}
 
-  @Query(() => PaginatedAuthorsGQL, { name: 'authors' })
+  @Query(() => PaginatedAuthorsGQL, { name: 'getAllAuthors' })
   async authors(
     @Args() pagination: PaginationGQL,
   ): Promise<PaginatedAuthorsGQL> {
@@ -20,20 +20,25 @@ export class AuthorResolver {
     return toPaginatedGQL(authors, (author) => plainToClass(AuthorGQL, author));
   }
 
-  @Query(() => AuthorGQL, { name: 'author', nullable: true })
+  @Query(() => AuthorGQL, { name: 'getByIdAuthor', nullable: true })
   getById(@Args('id', { type: () => ID }) id: number) {
     return this.authorService.findById(id);
   }
 
-  @Mutation(() => AuthorGQL)
+  @Mutation(() => AuthorGQL, { name: 'createAuthor' })
   createAuthor(@Args('input') input: CreateAuthorInput) {
     return this.authorService.create(input);
   }
 
-  @Mutation(() => AuthorGQL)
+  @Mutation(() => AuthorGQL, { name: 'updateAuthor' })
   updateAuthor(@Args('input') input: UpdateAuthorInput) {
     return this.authorService.update(input);
   }
-  //delete, softDelete
+
+  @Mutation(() => AuthorGQL, { name: 'deleteAuthor' })
+  async deleteAuthor(@Args('id', { type: () => Int }) id: number) {
+    return this.authorService.delete(id);
+  }
+
   //patch
 }

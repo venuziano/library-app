@@ -28,6 +28,18 @@ export class Author {
     this.updatedAt = new Date();
   }
 
+  delete(): void {
+    if (this.id === undefined) {
+      throw new Error('Cannot delete an Author that has not been persisted');
+    }
+    if (this.deletedAt) {
+      throw new Error(`Author with id ${this.id} is already deleted`);
+    }
+    const now = new Date();
+    this.deletedAt = now;
+    this.updatedAt = now;
+  }
+
   // rehydrating from persistence
   static reconstitute(properties: {
     id: number;

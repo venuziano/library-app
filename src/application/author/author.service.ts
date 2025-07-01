@@ -1,4 +1,4 @@
-import { Injectable, Inject, NotFoundException } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 
 import { Author } from '../../domain/author/author.entity';
 import { AuthorRepository } from '../../domain/author/author.repository';
@@ -18,6 +18,11 @@ import {
   authorCacheKey,
 } from 'src/infrastructure/cache/cache-keys';
 import { UpdateAuthorDto } from './dtos/update-author.dto';
+import { EntityChecker } from '../shared/entity-checker.service';
+import {
+  authorNotFoundException,
+  failedToDeleteAuthorException,
+} from './author-exceptions';
 
 @Injectable()
 export class AuthorService {
@@ -25,6 +30,7 @@ export class AuthorService {
     @Inject('AuthorRepository')
     private readonly authorRepository: AuthorRepository,
     public readonly cache: MultiLevelCacheService,
+    private readonly checker: EntityChecker,
   ) {}
 
   @Cacheable({ namespace: authorCacheKey })
@@ -41,12 +47,11 @@ export class AuthorService {
   }
 
   @Cacheable({ namespace: authorByIdKey })
-  async findById(id: number): Promise<Author | null> {
-    const author: Author | null = await this.authorRepository.findById(id);
-    if (!author) {
-      throw new NotFoundException(`Author not found`);
-    }
-    return author;
+  async findById(id: number): Promise<Author> {
+    return this.checker.ensureExists(
+      () => this.authorRepository.findById(id),
+      authorNotFoundException(),
+    );
   }
 
   @InvalidateCache({ namespace: authorCacheKey })
@@ -69,12 +74,32 @@ export class AuthorService {
     }),
   })
   async update(dto: UpdateAuthorDto): Promise<Author | null> {
-    const authorToUpdate: Author | null = await this.findById(dto.id);
-    if (!authorToUpdate) {
-      throw new NotFoundException(`Author not found`);
-    }
+    const authorToUpdate = await this.checker.ensureExists(
+      () => this.authorRepository.findById(dto.id),
+      authorNotFoundException(),
+    );
     const existing = await this.authorRepository.create(authorToUpdate);
     existing.update(dto.firstname!, dto.lastname!);
     return this.authorRepository.update(existing);
+  }
+
+  @InvalidateCache({
+    namespace: [authorCacheKey],
+    keyGenerator: (id: number) => ({
+      [authorByIdKey]: id.toString(),
+    }),
+  })
+  async delete(id: number): Promise<Author | null> {
+    const author = await this.checker.ensureExists(
+      () => this.authorRepository.findById(id),
+      authorNotFoundException(),
+    );
+
+    author.delete();
+
+    return this.checker.ensureExists(
+      () => this.authorRepository.delete(author),
+      failedToDeleteAuthorException(),
+    );
   }
 }

@@ -57,10 +57,12 @@ export class AuthorRepositoryImpl implements AuthorRepository {
     );
   }
 
+  private async findOrmById(id: number): Promise<AuthorOrm | null> {
+    return this.authorRepository.findOne({ where: { id } });
+  }
+
   async findById(id: number): Promise<Author | null> {
-    const foundAuthor: AuthorOrm | null = await this.authorRepository.findOne({
-      where: { id },
-    });
+    const foundAuthor: AuthorOrm | null = await this.findOrmById(id);
     return foundAuthor ? this.toDomain(foundAuthor) : null;
   }
 
@@ -103,6 +105,28 @@ export class AuthorRepositoryImpl implements AuthorRepository {
       createdAt: updatedOrm.createdAt,
       updatedAt: updatedOrm.updatedAt,
       deletedAt: updatedOrm.deletedAt,
+    });
+  }
+
+  async delete(author: Author): Promise<Author | null> {
+    const existing: AuthorOrm | null = await this.findOrmById(
+      author.id as number,
+    );
+    if (!existing) return null;
+
+    const now = new Date();
+    existing.deletedAt = now;
+    existing.updatedAt = now;
+
+    const deletedOrm = await this.authorRepository.save(existing);
+
+    return Author.reconstitute({
+      id: deletedOrm.id,
+      firstname: deletedOrm.firstname,
+      lastname: deletedOrm.lastname,
+      createdAt: deletedOrm.createdAt,
+      updatedAt: deletedOrm.updatedAt,
+      deletedAt: deletedOrm.deletedAt,
     });
   }
 }
