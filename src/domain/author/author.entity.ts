@@ -8,7 +8,6 @@ export class Author {
     public deletedAt?: Date,
   ) {}
 
-  // creating authors
   static create(properties: { firstname: string; lastname: string }): Author {
     return new Author(
       undefined,
