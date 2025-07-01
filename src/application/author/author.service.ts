@@ -7,7 +7,7 @@ import { PaginationDto } from '../pagination/pagination.dto';
 import {
   Pagination,
   PaginationResult,
-} from 'src/domain/pagination/pagination.entity';
+} from '../../domain/pagination/pagination.entity';
 import {
   Cacheable,
   InvalidateCache,

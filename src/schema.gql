@@ -27,15 +27,9 @@ type PaginatedAuthorsGQL {
   pageInfo: PageInfoGQL!
 }
 
-type CacheEntry {
-  key: String!
-  value: String
-}
-
 type Query {
   getAllAuthors(limit: Int! = 50, page: Int! = 1, sort: String! = "createdAt", searchTerm: String, order: SortOrder! = DESC): PaginatedAuthorsGQL!
   getByIdAuthor(id: ID!): AuthorGQL
-  cacheKeys: [CacheEntry!]!
 }
 
 """Sort direction (ascending or descending)"""
@@ -49,7 +43,6 @@ type Mutation {
   updateAuthor(input: UpdateAuthorInput!): AuthorGQL!
   deleteAuthor(id: Int!): AuthorGQL!
   patchAuthor(input: PatchAuthorInput!): AuthorGQL!
-  setCache(input: String!): Boolean!
 }
 
 input CreateAuthorInput {
