@@ -23,6 +23,7 @@ import {
   authorNotFoundException,
   failedToDeleteAuthorException,
 } from './author-exceptions';
+import { PatchAuthorDto } from './dtos/patch-author.dto';
 
 @Injectable()
 export class AuthorService {
@@ -79,8 +80,25 @@ export class AuthorService {
       authorNotFoundException(),
     );
     const existing = await this.authorRepository.create(authorToUpdate);
-    existing.update(dto.firstname!, dto.lastname!);
+    existing.update(dto.firstname, dto.lastname);
     return this.authorRepository.update(existing);
+  }
+
+  @InvalidateCache({
+    namespace: [authorCacheKey],
+    keyGenerator: (dto: PatchAuthorDto) => ({
+      [authorByIdKey]: dto.id.toString(),
+    }),
+  })
+  async patch(dto: PatchAuthorDto): Promise<Author | null> {
+    const author = await this.checker.ensureExists(
+      () => this.authorRepository.findById(dto.id),
+      authorNotFoundException(),
+    );
+
+    author.patch(dto);
+
+    return this.authorRepository.update(author);
   }
 
   @InvalidateCache({

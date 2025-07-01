@@ -27,6 +27,12 @@ export class Author {
     this.updatedAt = new Date();
   }
 
+  patch(props: { firstname?: string; lastname?: string }) {
+    if (props.firstname !== undefined) this.firstname = props.firstname;
+    if (props.lastname !== undefined) this.lastname = props.lastname;
+    this.updatedAt = new Date();
+  }
+
   delete(): void {
     if (this.id === undefined) {
       throw new Error('Cannot delete an Author that has not been persisted');

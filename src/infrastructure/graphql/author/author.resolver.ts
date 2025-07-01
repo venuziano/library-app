@@ -7,6 +7,7 @@ import { CreateAuthorInput } from './types/create-author.input';
 import { toPaginatedGQL } from '../shared/pagination.output.gql';
 import { PaginationGQL } from '../shared/pagination.input.gql';
 import { UpdateAuthorInput } from './types/update-author.input';
+import { PatchAuthorInput } from './types/patch-author.input';
 
 @Resolver(() => AuthorGQL)
 export class AuthorResolver {
@@ -40,5 +41,8 @@ export class AuthorResolver {
     return this.authorService.delete(id);
   }
 
-  //patch
+  @Mutation(() => AuthorGQL, { name: 'patchAuthor' })
+  patchAuthor(@Args('input') input: PatchAuthorInput) {
+    return this.authorService.patch(input);
+  }
 }

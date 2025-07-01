@@ -48,6 +48,7 @@ type Mutation {
   createAuthor(input: CreateAuthorInput!): AuthorGQL!
   updateAuthor(input: UpdateAuthorInput!): AuthorGQL!
   deleteAuthor(id: Int!): AuthorGQL!
+  patchAuthor(input: PatchAuthorInput!): AuthorGQL!
   setCache(input: String!): Boolean!
 }
 
@@ -59,5 +60,11 @@ input CreateAuthorInput {
 input UpdateAuthorInput {
   firstname: String!
   lastname: String!
+  id: Int!
+}
+
+input PatchAuthorInput {
+  firstname: String
+  lastname: String
   id: Int!
 }
