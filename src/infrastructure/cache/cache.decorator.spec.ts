@@ -1,11 +1,8 @@
 /* eslint-disable @typescript-eslint/require-await */
 /* eslint-disable @typescript-eslint/unbound-method */
 
-import {
-  Cacheable,
-  InvalidateCache,
-} from '../../src/infrastructure/cache/cache.decorator';
-import { MultiLevelCacheService } from '../../src/infrastructure/cache/multi-level-cache.service';
+import { Cacheable, InvalidateCache } from './cache.decorator';
+import { MultiLevelCacheService } from './multi-level-cache.service';
 
 class DummyService {
   // Only mock the methods we call in the decorator

@@ -1,7 +1,7 @@
 import { ObjectType, Field, ID } from '@nestjs/graphql';
 
-import { CommonDatesGQL } from '../../shared/common-dates.graphql-types';
-import { Paginated } from '../../shared/pagination.output.gql';
+import { CommonDatesGQL } from 'src/infrastructure/graphql/shared/common-dates.graphql-types';
+import { Paginated } from 'src/infrastructure/graphql/shared/pagination.output.gql';
 
 @ObjectType()
 export class AuthorGQL extends CommonDatesGQL {

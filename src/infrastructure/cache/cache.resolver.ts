@@ -8,7 +8,7 @@ import {
   Field,
 } from '@nestjs/graphql';
 import { Inject } from '@nestjs/common';
-import { MultiLevelCacheService } from '../../cache/multi-level-cache.service';
+import { MultiLevelCacheService } from './multi-level-cache.service';
 
 @ObjectType()
 export class CacheEntry {

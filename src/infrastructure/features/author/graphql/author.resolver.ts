@@ -1,13 +1,13 @@
 import { Resolver, Query, Mutation, Args, ID, Int } from '@nestjs/graphql';
 import { plainToClass } from 'class-transformer';
 
-import { AuthorService } from '../../../application/author/author.service';
+import { AuthorService } from '../../../../application/author/author.service';
 import { AuthorGQL, PaginatedAuthorsGQL } from './types/author.gql';
 import { CreateAuthorInput } from './types/create-author.input';
-import { toPaginatedGQL } from '../shared/pagination.output.gql';
-import { PaginationGQL } from '../shared/pagination.input.gql';
 import { UpdateAuthorInput } from './types/update-author.input';
 import { PatchAuthorInput } from './types/patch-author.input';
+import { PaginationGQL } from 'src/infrastructure/graphql/shared/pagination.input.gql';
+import { toPaginatedGQL } from 'src/infrastructure/graphql/shared/pagination.output.gql';
 
 @Resolver(() => AuthorGQL)
 export class AuthorResolver {

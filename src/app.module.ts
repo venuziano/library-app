@@ -5,7 +5,7 @@ import { join } from 'path';
 import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default';
 import { GraphQLError } from 'graphql';
 
-import { AuthorModule } from './modules/author.module';
+import { AuthorModule } from './infrastructure/features/author/author.module';
 import { DatabaseModule } from './infrastructure/database/database.module';
 import { InfrastructureCacheModule } from './infrastructure/cache/cache.module';
 import { CacheModule } from './modules/cache.module';

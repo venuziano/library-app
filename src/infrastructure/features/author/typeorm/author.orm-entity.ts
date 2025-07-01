@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
-import { CommonDatesEntity } from '../shared/common-dates.orm-entity';
+import { CommonDatesEntity } from '../../../typeorm/shared/common-dates.orm-entity';
 
 @Entity('author')
 export class AuthorOrm extends CommonDatesEntity {

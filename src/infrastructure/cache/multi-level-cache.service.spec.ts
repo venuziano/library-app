@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { RedisClientType } from 'redis';
 
-import { MultiLevelCacheService } from '../../src/infrastructure/cache/multi-level-cache.service';
-import { RedisCheckService } from '../../src/infrastructure/cache/redis-cache.service';
-import { AppEnvConfigService } from '../../src/infrastructure/config/environment-variables/app-env.config';
+import { MultiLevelCacheService } from './multi-level-cache.service';
+import { RedisCheckService } from './redis-cache.service';
+import { AppEnvConfigService } from '../config/environment-variables/app-env.config';
 
 describe('MultiLevelCacheService (unit)', () => {
   let service: MultiLevelCacheService;
