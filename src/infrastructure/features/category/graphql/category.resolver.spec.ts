@@ -269,4 +269,4 @@ describe('CategoryResolver (integration)', () => {
         expect(data.name).toBe('Fiction');
       });
   });
-}); 
+});

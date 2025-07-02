@@ -5,7 +5,7 @@ export class Book {
     public publisher: string | undefined,
     public publicationDate: Date | undefined,
     public pageCount: number | undefined,
-    public categoryId: number,
+    public categoryIds: number[],
     public authorIds: number[],
     public createdAt: Date | undefined,
     public updatedAt: Date | undefined,
@@ -17,11 +17,11 @@ export class Book {
     publisher?: string;
     publicationDate?: Date;
     pageCount?: number;
-    categoryId: number;
+    categoryIds: number[];
     authorIds: number[];
   }): Book {
-    if (!properties.categoryId) {
-      throw new Error('Book must have a category');
+    if (!properties.categoryIds || properties.categoryIds.length === 0) {
+      throw new Error('Book must have at least one category');
     }
     if (!properties.authorIds || properties.authorIds.length === 0) {
       throw new Error('Book must have at least one author');
@@ -33,7 +33,7 @@ export class Book {
       properties.publisher,
       properties.publicationDate,
       properties.pageCount,
-      properties.categoryId,
+      properties.categoryIds,
       properties.authorIds,
       undefined,
       undefined,
@@ -45,14 +45,14 @@ export class Book {
     publisher?: string;
     publicationDate?: Date;
     pageCount?: number;
-    categoryId: number;
+    categoryIds: number[];
     authorIds: number[];
   }) {
     if (!properties.title) {
       throw new Error('title cannot be empty');
     }
-    if (!properties.categoryId) {
-      throw new Error('Book must have a category');
+    if (!properties.categoryIds || properties.categoryIds.length === 0) {
+      throw new Error('Book must have at least one category');
     }
     if (!properties.authorIds || properties.authorIds.length === 0) {
       throw new Error('Book must have at least one author');
@@ -62,7 +62,7 @@ export class Book {
     this.publisher = properties.publisher;
     this.publicationDate = properties.publicationDate;
     this.pageCount = properties.pageCount;
-    this.categoryId = properties.categoryId;
+    this.categoryIds = properties.categoryIds;
     this.authorIds = properties.authorIds;
     this.updatedAt = new Date();
   }
@@ -72,7 +72,7 @@ export class Book {
     publisher?: string;
     publicationDate?: Date;
     pageCount?: number;
-    categoryId?: number;
+    categoryIds?: number[];
     authorIds?: number[];
   }) {
     if (props.title !== undefined) this.title = props.title;
@@ -80,7 +80,7 @@ export class Book {
     if (props.publicationDate !== undefined)
       this.publicationDate = props.publicationDate;
     if (props.pageCount !== undefined) this.pageCount = props.pageCount;
-    if (props.categoryId !== undefined) this.categoryId = props.categoryId;
+    if (props.categoryIds !== undefined) this.categoryIds = props.categoryIds;
     if (props.authorIds !== undefined) this.authorIds = props.authorIds;
     this.updatedAt = new Date();
   }
@@ -104,7 +104,7 @@ export class Book {
     publisher?: string;
     publicationDate?: Date;
     pageCount?: number;
-    categoryId: number;
+    categoryIds: number[];
     authorIds: number[];
     createdAt: Date;
     updatedAt: Date;
@@ -116,7 +116,7 @@ export class Book {
       properties.publisher,
       properties.publicationDate,
       properties.pageCount,
-      properties.categoryId,
+      properties.categoryIds,
       properties.authorIds,
       properties.createdAt,
       properties.updatedAt,

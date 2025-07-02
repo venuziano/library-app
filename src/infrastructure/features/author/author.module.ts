@@ -15,5 +15,6 @@ import { AuthorResolver } from './graphql/author.resolver';
     AuthorResolver,
     EntityChecker,
   ],
+  exports: [AuthorService],
 })
 export class AuthorModule {}

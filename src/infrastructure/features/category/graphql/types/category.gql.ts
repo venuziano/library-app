@@ -6,7 +6,7 @@ import { Paginated } from 'src/infrastructure/graphql/shared/pagination.output.g
 @ObjectType()
 export class CategoryGQL extends CommonDatesGQL {
   @Field(() => ID)
-  id: string;
+  id: number;
 
   @Field()
   name: string;

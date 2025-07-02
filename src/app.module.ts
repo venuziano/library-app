@@ -12,6 +12,7 @@ import { CacheModule } from './modules/cache.module';
 import { LoggingModule } from './infrastructure/logging/logging.module';
 import { CategoryModule } from './infrastructure/features/category/category.module';
 import { SharedModule } from './infrastructure/features/entity-checker/entity-checker.module';
+import { BookModule } from './infrastructure/features/book/book.module';
 
 const gqlLogger: Logger = new Logger('GraphQL');
 
@@ -57,6 +58,7 @@ const gqlLogger: Logger = new Logger('GraphQL');
     AuthorModule,
     CategoryModule,
     CacheModule,
+    BookModule,
   ],
 })
 export class AppModule {}

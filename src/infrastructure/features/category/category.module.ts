@@ -15,5 +15,6 @@ import { CategoryService } from 'src/application/category/category.service';
     CategoryResolver,
     EntityChecker,
   ],
+  exports: [CategoryService],
 })
 export class CategoryModule {}

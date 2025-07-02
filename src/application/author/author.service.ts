@@ -49,6 +49,11 @@ export class AuthorService {
     return this.checker.ensureAuthorExists(id);
   }
 
+  async findByIds(ids: number[]): Promise<Author[]> {
+    if (!ids || ids.length === 0) return [];
+    return this.authorRepository.findByIds(ids);
+  }
+
   @InvalidateCache({ namespace: authorCacheKey })
   async create(dto: CreateAuthorDto): Promise<Author> {
     const author: Author = Author.create({

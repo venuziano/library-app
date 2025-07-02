@@ -12,7 +12,7 @@ export class PaginationGQL {
   @Field(() => Int, { defaultValue: defaultPaginationValue })
   limit!: number;
 
-  @Field(() => Int, { defaultValue: 1 })
+  @Field(() => Int, { defaultValue: 0 })
   page!: number;
 
   @Field(() => String, { defaultValue: defaultSortField })

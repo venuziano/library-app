@@ -33,9 +33,10 @@ export class CreateBookDto {
   pageCount?: number;
 
   @Type(() => Number)
-  @IsNumber()
-  @IsNotEmpty()
-  categoryId: number;
+  @IsArray()
+  @ArrayMinSize(1, { message: 'Book must have at least one category' })
+  @IsNumber({}, { each: true })
+  categoryIds: number[];
 
   @Type(() => Number)
   @IsArray()

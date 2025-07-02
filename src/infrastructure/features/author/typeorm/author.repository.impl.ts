@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { FindManyOptions, ILike, Repository } from 'typeorm';
+import { FindManyOptions, ILike, In, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { AuthorOrm } from './author.orm-entity';
@@ -64,6 +64,16 @@ export class AuthorRepositoryImpl implements AuthorRepository {
   async findById(id: number): Promise<Author | null> {
     const foundAuthor: AuthorOrm | null = await this.findOrmById(id);
     return foundAuthor ? this.toDomain(foundAuthor) : null;
+  }
+
+  async findByIds(ids: number[]): Promise<Author[] | []> {
+    if (!ids || ids.length === 0) return [];
+
+    const foundOrms: AuthorOrm[] = await this.authorRepository.find({
+      where: { id: In(ids) },
+    });
+
+    return foundOrms.map((orm) => this.toDomain(orm));
   }
 
   async create(author: Author): Promise<Author> {

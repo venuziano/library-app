@@ -49,6 +49,11 @@ export class CategoryService {
     return this.checker.ensureCategoryExists(id);
   }
 
+  async findByIds(ids: number[]): Promise<Category[]> {
+    if (!ids || ids.length === 0) return [];
+    return this.categoryRepository.findByIds(ids);
+  }
+
   @InvalidateCache({ namespace: categoryCacheKey })
   async create(dto: CreateCategoryDto): Promise<Category> {
     const category: Category = Category.create({

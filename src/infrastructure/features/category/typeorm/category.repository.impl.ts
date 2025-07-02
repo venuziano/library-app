@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { FindManyOptions, ILike, Repository } from 'typeorm';
+import { FindManyOptions, ILike, In, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { CategoryOrm } from './category.orm-entity';
@@ -58,6 +58,16 @@ export class CategoryRepositoryImpl implements CategoryRepository {
   async findById(id: number): Promise<Category | null> {
     const foundCategory: CategoryOrm | null = await this.findOrmById(id);
     return foundCategory ? this.toDomain(foundCategory) : null;
+  }
+
+  async findByIds(ids: number[]): Promise<Category[] | []> {
+    if (!ids || ids.length === 0) return [];
+
+    const foundOrms: CategoryOrm[] = await this.categoryRepository.find({
+      where: { id: In(ids) },
+    });
+
+    return foundOrms.map((orm) => this.toDomain(orm));
   }
 
   async create(category: Category): Promise<Category> {

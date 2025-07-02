@@ -8,7 +8,7 @@ describe('Book Entity (DDD Domain)', () => {
         publisher: 'Ace',
         publicationDate: new Date('1965-08-01'),
         pageCount: 412,
-        categoryId: 1,
+        categoryIds: [1],
         authorIds: [1, 2],
       });
       expect(book.id).toBeUndefined();
@@ -16,27 +16,27 @@ describe('Book Entity (DDD Domain)', () => {
       expect(book.publisher).toBe('Ace');
       expect(book.publicationDate).toEqual(new Date('1965-08-01'));
       expect(book.pageCount).toBe(412);
-      expect(book.categoryId).toBe(1);
+      expect(book.categoryIds).toEqual([1]);
       expect(book.authorIds).toEqual([1, 2]);
       expect(book.createdAt).toBeUndefined();
       expect(book.updatedAt).toBeUndefined();
       expect(book.deletedAt).toBeUndefined();
     });
 
-    it('should throw if categoryId is missing', () => {
+    it('should throw if categoryIds is empty', () => {
       expect(() =>
         Book.create({
           title: 'No Category',
           authorIds: [1],
         } as any),
-      ).toThrow('Book must have a category');
+      ).toThrow('Book must have at least one category');
     });
 
     it('should throw if authorIds is empty', () => {
       expect(() =>
         Book.create({
           title: 'No Authors',
-          categoryId: 1,
+          categoryIds: [1],
           authorIds: [],
         }),
       ).toThrow('Book must have at least one author');
@@ -52,7 +52,7 @@ describe('Book Entity (DDD Domain)', () => {
         publisher: 'Gnome Press',
         publicationDate: new Date('1951-06-01'),
         pageCount: 255,
-        categoryId: 2,
+        categoryIds: [2],
         authorIds: [3],
         createdAt: now,
         updatedAt: now,
@@ -62,7 +62,7 @@ describe('Book Entity (DDD Domain)', () => {
       expect(book.publisher).toBe('Gnome Press');
       expect(book.publicationDate).toEqual(new Date('1951-06-01'));
       expect(book.pageCount).toBe(255);
-      expect(book.categoryId).toBe(2);
+      expect(book.categoryIds).toEqual([2]);
       expect(book.authorIds).toEqual([3]);
       expect(book.createdAt).toBe(now);
       expect(book.updatedAt).toBe(now);
@@ -78,7 +78,7 @@ describe('Book Entity (DDD Domain)', () => {
         publisher: 'Chatto & Windus',
         publicationDate: new Date('1932-01-01'),
         pageCount: 311,
-        categoryId: 3,
+        categoryIds: [3],
         authorIds: [4],
         createdAt: now,
         updatedAt: now,
@@ -95,7 +95,7 @@ describe('Book Entity (DDD Domain)', () => {
         publisher: 'Old Publisher',
         publicationDate: new Date('2000-01-01'),
         pageCount: 100,
-        categoryId: 1,
+        categoryIds: [1],
         authorIds: [1],
       });
       const before = book.updatedAt;
@@ -104,14 +104,14 @@ describe('Book Entity (DDD Domain)', () => {
         publisher: 'New Publisher',
         publicationDate: new Date('2020-01-01'),
         pageCount: 200,
-        categoryId: 2,
+        categoryIds: [2],
         authorIds: [2, 3],
       });
       expect(book.title).toBe('New Title');
       expect(book.publisher).toBe('New Publisher');
       expect(book.publicationDate).toEqual(new Date('2020-01-01'));
       expect(book.pageCount).toBe(200);
-      expect(book.categoryId).toBe(2);
+      expect(book.categoryIds).toEqual([2]);
       expect(book.authorIds).toEqual([2, 3]);
       expect(book.updatedAt).toBeInstanceOf(Date);
       if (before) {
@@ -122,22 +122,22 @@ describe('Book Entity (DDD Domain)', () => {
     it('should throw when title is empty', () => {
       const book = Book.create({
         title: 'Valid Title',
-        categoryId: 1,
+        categoryIds: [1],
         authorIds: [1],
       });
       expect(() =>
         book.update({
           title: '',
-          categoryId: 1,
+          categoryIds: [1],
           authorIds: [1],
         }),
       ).toThrow('title cannot be empty');
     });
 
-    it('should throw when categoryId is missing', () => {
+    it('should throw when categoryIds is empty', () => {
       const book = Book.create({
         title: 'Valid Title',
-        categoryId: 1,
+        categoryIds: [1],
         authorIds: [1],
       });
       expect(() =>
@@ -145,19 +145,19 @@ describe('Book Entity (DDD Domain)', () => {
           title: 'New Title',
           authorIds: [1],
         } as any),
-      ).toThrow('Book must have a category');
+      ).toThrow('Book must have at least one category');
     });
 
     it('should throw when authorIds is empty', () => {
       const book = Book.create({
         title: 'Valid Title',
-        categoryId: 1,
+        categoryIds: [1],
         authorIds: [1],
       });
       expect(() =>
         book.update({
           title: 'New Title',
-          categoryId: 1,
+          categoryIds: [1],
           authorIds: [],
         }),
       ).toThrow('Book must have at least one author');
@@ -171,7 +171,7 @@ describe('Book Entity (DDD Domain)', () => {
         publisher: 'Original Publisher',
         publicationDate: new Date('2010-01-01'),
         pageCount: 150,
-        categoryId: 1,
+        categoryIds: [1],
         authorIds: [1],
       });
       book.patch({ title: 'Updated Title' });
@@ -191,7 +191,7 @@ describe('Book Entity (DDD Domain)', () => {
     it('should handle empty patch object (still set updatedAt)', () => {
       const book = Book.create({
         title: 'Unchanged Title',
-        categoryId: 1,
+        categoryIds: [1],
         authorIds: [1],
       });
       const before = book.updatedAt;
@@ -208,7 +208,7 @@ describe('Book Entity (DDD Domain)', () => {
     it('should throw if id is undefined (not persisted)', () => {
       const book = Book.create({
         title: 'Will Delete',
-        categoryId: 1,
+        categoryIds: [1],
         authorIds: [1],
       });
       expect(() => book.delete()).toThrow(
@@ -224,7 +224,7 @@ describe('Book Entity (DDD Domain)', () => {
         publisher: 'Del',
         publicationDate: new Date('2015-01-01'),
         pageCount: 300,
-        categoryId: 2,
+        categoryIds: [2],
         authorIds: [2],
         createdAt: now,
         updatedAt: now,
@@ -243,7 +243,7 @@ describe('Book Entity (DDD Domain)', () => {
         publisher: 'Del',
         publicationDate: new Date('2015-01-01'),
         pageCount: 300,
-        categoryId: 2,
+        categoryIds: [2],
         authorIds: [2],
         createdAt: now,
         updatedAt: now,
