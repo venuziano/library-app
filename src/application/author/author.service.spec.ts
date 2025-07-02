@@ -10,12 +10,12 @@ import { CreateAuthorDto } from './dtos/create-author.dto';
 import { UpdateAuthorDto } from './dtos/update-author.dto';
 import { PatchAuthorDto } from './dtos/patch-author.dto';
 import { PaginationDto } from '../pagination/pagination.dto';
+import { defaultSortOrder } from '../pagination/helpers';
+import { PaginationResult } from '../../domain/pagination/pagination.entity';
 import {
   authorNotFoundException,
   failedToDeleteAuthorException,
 } from './author-exceptions';
-import { defaultSortOrder } from '../pagination/helpers';
-import { PaginationResult } from '../../domain/pagination/pagination.entity';
 
 describe('AuthorService', () => {
   let service: AuthorService;
@@ -38,6 +38,7 @@ describe('AuthorService', () => {
       publish: jest.fn().mockResolvedValue(undefined),
     } as any;
     checker = {
+      ensureAuthorExists: jest.fn(),
       ensureExists: jest.fn(),
     } as any;
 
@@ -45,7 +46,7 @@ describe('AuthorService', () => {
   });
 
   describe('findAll', () => {
-    it('should build pagination and return repository result', async () => {
+    it('builds pagination and returns repository result', async () => {
       const dto: PaginationDto = {
         limit: 10,
         page: 2,
@@ -78,7 +79,7 @@ describe('AuthorService', () => {
   });
 
   describe('findById', () => {
-    it('should call checker.ensureExists and return the author', async () => {
+    it('calls checker.ensureAuthorExists and returns the author', async () => {
       const author = Author.reconstitute({
         id: 1,
         firstname: 'A',
@@ -86,18 +87,17 @@ describe('AuthorService', () => {
         createdAt: new Date(),
         updatedAt: new Date(),
       });
-      checker.ensureExists.mockImplementation((cb) => cb());
-      repo.findById.mockResolvedValue(author);
+      checker.ensureAuthorExists.mockResolvedValue(author);
 
       const result = await service.findById(1);
 
-      expect(checker.ensureExists).toHaveBeenCalled();
+      expect(checker.ensureAuthorExists).toHaveBeenCalledWith(1);
       expect(result).toBe(author);
     });
 
-    it('should throw if not found', async () => {
+    it('throws if not found', async () => {
       const exception = authorNotFoundException();
-      checker.ensureExists.mockImplementation(() => {
+      checker.ensureAuthorExists.mockImplementation(() => {
         throw exception;
       });
 
@@ -106,7 +106,7 @@ describe('AuthorService', () => {
   });
 
   describe('create', () => {
-    it('should create a new author and return it', async () => {
+    it('creates a new author and returns it', async () => {
       const dto: CreateAuthorDto = { firstname: 'X', lastname: 'Y' };
       const created = Author.create(dto);
       repo.create.mockResolvedValue(created);
@@ -114,27 +114,24 @@ describe('AuthorService', () => {
       const result = await service.create(dto);
 
       expect(repo.create).toHaveBeenCalledWith(
-        expect.objectContaining({
-          firstname: 'X',
-          lastname: 'Y',
-        }),
+        expect.objectContaining({ firstname: 'X', lastname: 'Y' }),
       );
       expect(result).toBe(created);
     });
   });
 
   describe('update', () => {
-    it('should throw if author not found', async () => {
+    it('throws if author not found', async () => {
       const dto: UpdateAuthorDto = { id: 5, firstname: 'F', lastname: 'L' };
       const exception = authorNotFoundException();
-      checker.ensureExists.mockImplementationOnce(() => {
+      checker.ensureAuthorExists.mockImplementationOnce(() => {
         throw exception;
       });
 
       await expect(service.update(dto)).rejects.toBe(exception);
     });
 
-    it('should update and return the mutated author', async () => {
+    it('updates and returns the mutated author', async () => {
       const dto: UpdateAuthorDto = {
         id: 5,
         firstname: 'New',
@@ -147,9 +144,8 @@ describe('AuthorService', () => {
         createdAt: new Date(),
         updatedAt: new Date(),
       });
-      checker.ensureExists.mockResolvedValueOnce(original);
-      repo.create.mockImplementationOnce((author) => Promise.resolve(author));
-      repo.update.mockImplementationOnce((author) => Promise.resolve(author));
+      checker.ensureAuthorExists.mockResolvedValueOnce(original);
+      repo.update.mockResolvedValueOnce(original);
 
       const result = (await service.update(dto))!;
 
@@ -160,17 +156,17 @@ describe('AuthorService', () => {
   });
 
   describe('patch', () => {
-    it('should throw if author not found', async () => {
+    it('throws if author not found', async () => {
       const dto: PatchAuthorDto = { id: 3, firstname: 'A', lastname: 'B' };
       const exception = authorNotFoundException();
-      checker.ensureExists.mockImplementationOnce(() => {
+      checker.ensureAuthorExists.mockImplementationOnce(() => {
         throw exception;
       });
 
       await expect(service.patch(dto)).rejects.toBe(exception);
     });
 
-    it('should patch fields and return updated author', async () => {
+    it('patches fields and returns updated author', async () => {
       const dto: PatchAuthorDto = { id: 3, firstname: 'NewFirst' };
       const original = Author.reconstitute({
         id: 3,
@@ -179,8 +175,8 @@ describe('AuthorService', () => {
         createdAt: new Date(),
         updatedAt: new Date(),
       });
-      checker.ensureExists.mockResolvedValueOnce(original);
-      repo.update.mockImplementationOnce((author) => Promise.resolve(author));
+      checker.ensureAuthorExists.mockResolvedValueOnce(original);
+      repo.update.mockResolvedValueOnce(original);
 
       const result = (await service.patch(dto))!;
 
@@ -191,16 +187,16 @@ describe('AuthorService', () => {
   });
 
   describe('delete', () => {
-    it('should throw if author not found', async () => {
+    it('throws if author not found', async () => {
       const exception = authorNotFoundException();
-      checker.ensureExists.mockImplementationOnce(() => {
+      checker.ensureAuthorExists.mockImplementationOnce(() => {
         throw exception;
       });
 
       await expect(service.delete(9)).rejects.toBe(exception);
     });
 
-    it('should delete and return entity', async () => {
+    it('deletes and returns entity', async () => {
       const author = Author.reconstitute({
         id: 9,
         firstname: 'A',
@@ -208,10 +204,9 @@ describe('AuthorService', () => {
         createdAt: new Date(),
         updatedAt: new Date(),
       });
-      checker.ensureExists
-        .mockResolvedValueOnce(author)
-        .mockImplementationOnce((cb) => cb());
-      repo.delete.mockImplementationOnce((a) => Promise.resolve(a));
+      checker.ensureAuthorExists.mockResolvedValueOnce(author);
+      checker.ensureExists.mockImplementationOnce((fn) => fn());
+      repo.delete.mockResolvedValueOnce(author);
 
       const result = (await service.delete(9))!;
 
@@ -219,7 +214,7 @@ describe('AuthorService', () => {
       expect(result.deletedAt).toBeInstanceOf(Date);
     });
 
-    it('should throw if delete fails', async () => {
+    it('throws if delete fails', async () => {
       const author = Author.reconstitute({
         id: 9,
         firstname: 'A',
@@ -228,11 +223,10 @@ describe('AuthorService', () => {
         updatedAt: new Date(),
       });
       const exception = failedToDeleteAuthorException();
-      checker.ensureExists
-        .mockResolvedValueOnce(author)
-        .mockImplementationOnce(() => {
-          throw exception;
-        });
+      checker.ensureAuthorExists.mockResolvedValueOnce(author);
+      checker.ensureExists.mockImplementationOnce(() => {
+        throw exception;
+      });
 
       await expect(service.delete(9)).rejects.toBe(exception);
     });

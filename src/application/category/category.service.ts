@@ -17,10 +17,7 @@ import {
 import { EntityChecker } from '../shared/entity-checker.service';
 import { CategoryRepository } from 'src/domain/category/category.repository';
 import { Category } from 'src/domain/category/category.entity';
-import {
-  categoryNotFoundException,
-  failedToDeleteCategoryException,
-} from './category-exceptions';
+import { failedToDeleteCategoryException } from './category-exceptions';
 import { CreateCategoryDto } from './dtos/create-category.dto';
 import { UpdateCategoryDto } from './dtos/update-category.dto';
 import { PatchCategoryDto } from './dtos/patch-category.dto';
@@ -49,10 +46,7 @@ export class CategoryService {
 
   @Cacheable({ namespace: categoryByIdKey })
   async findById(id: number): Promise<Category> {
-    return this.checker.ensureExists(
-      () => this.categoryRepository.findById(id),
-      categoryNotFoundException(),
-    );
+    return this.checker.ensureCategoryExists(id);
   }
 
   @InvalidateCache({ namespace: categoryCacheKey })
@@ -70,10 +64,7 @@ export class CategoryService {
     }),
   })
   async update(dto: UpdateCategoryDto): Promise<Category | null> {
-    const categoryToUpdate = await this.checker.ensureExists(
-      () => this.categoryRepository.findById(dto.id),
-      categoryNotFoundException(),
-    );
+    const categoryToUpdate = await this.checker.ensureCategoryExists(dto.id);
     categoryToUpdate.update(dto.name);
     return this.categoryRepository.update(categoryToUpdate);
   }
@@ -85,10 +76,7 @@ export class CategoryService {
     }),
   })
   async patch(dto: PatchCategoryDto): Promise<Category | null> {
-    const category = await this.checker.ensureExists(
-      () => this.categoryRepository.findById(dto.id),
-      categoryNotFoundException(),
-    );
+    const category = await this.checker.ensureCategoryExists(dto.id);
 
     category.patch(dto);
 
@@ -102,10 +90,7 @@ export class CategoryService {
     }),
   })
   async delete(id: number): Promise<Category | null> {
-    const category = await this.checker.ensureExists(
-      () => this.categoryRepository.findById(id),
-      categoryNotFoundException(),
-    );
+    const category = await this.checker.ensureCategoryExists(id);
 
     category.delete();
 

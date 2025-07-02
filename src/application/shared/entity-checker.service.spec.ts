@@ -2,12 +2,24 @@
 import { NotFoundException } from '@nestjs/common';
 
 import { EntityChecker } from './entity-checker.service';
+import { AuthorRepository } from 'src/domain/author/author.repository';
+import { CategoryRepository } from 'src/domain/category/category.repository';
 
 describe('EntityChecker', () => {
   let checker: EntityChecker;
+  let mockAuthorRepo: jest.Mocked<AuthorRepository>;
+  let mockCategoryRepo: jest.Mocked<CategoryRepository>;
 
   beforeEach(() => {
-    checker = new EntityChecker();
+    mockAuthorRepo = {
+      findById: jest.fn(),
+    } as unknown as jest.Mocked<AuthorRepository>;
+
+    mockCategoryRepo = {
+      findById: jest.fn(),
+    } as unknown as jest.Mocked<CategoryRepository>;
+
+    checker = new EntityChecker(mockAuthorRepo, mockCategoryRepo);
   });
 
   describe('ensureExists', () => {
