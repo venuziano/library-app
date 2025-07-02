@@ -27,30 +27,9 @@ type PaginatedAuthorsGQL {
   pageInfo: PageInfoGQL!
 }
 
-type CacheEntry {
-  key: String!
-  value: String
-}
-
-type CategoryGQL {
-  createdAt: DateTime!
-  updatedAt: DateTime!
-  deletedAt: DateTime
-  id: ID!
-  name: String!
-}
-
-type PaginatedCategoriesGQL {
-  items: [CategoryGQL!]!
-  pageInfo: PageInfoGQL!
-}
-
 type Query {
   getAllAuthors(limit: Int! = 50, page: Int! = 1, sort: String! = "createdAt", searchTerm: String, order: SortOrder! = DESC): PaginatedAuthorsGQL!
   getAuthorById(id: ID!): AuthorGQL
-  getAllCategories(limit: Int! = 50, page: Int! = 1, sort: String! = "createdAt", searchTerm: String, order: SortOrder! = DESC): PaginatedCategoriesGQL!
-  getCategoryById(id: ID!): CategoryGQL
-  cacheKeys: [CacheEntry!]!
 }
 
 """Sort direction (ascending or descending)"""
@@ -64,11 +43,6 @@ type Mutation {
   updateAuthor(input: UpdateAuthorInput!): AuthorGQL!
   patchAuthor(input: PatchAuthorInput!): AuthorGQL!
   deleteAuthor(id: Int!): AuthorGQL!
-  createCategory(input: CreateCategoryInput!): CategoryGQL!
-  updateCategory(input: UpdateCategoryInput!): CategoryGQL!
-  patchCategory(input: PatchCategoryInput!): CategoryGQL!
-  deleteCategory(id: Int!): CategoryGQL!
-  setCache(input: String!): Boolean!
 }
 
 input CreateAuthorInput {
@@ -85,19 +59,5 @@ input UpdateAuthorInput {
 input PatchAuthorInput {
   firstname: String
   lastname: String
-  id: Int!
-}
-
-input CreateCategoryInput {
-  name: String!
-}
-
-input UpdateCategoryInput {
-  name: String!
-  id: Int!
-}
-
-input PatchCategoryInput {
-  name: String
   id: Int!
 }
