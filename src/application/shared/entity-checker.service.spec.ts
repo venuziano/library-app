@@ -1,5 +1,9 @@
 /* eslint-disable @typescript-eslint/unbound-method */
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
 import { EntityChecker } from './entity-checker.service';
 import { Author } from 'src/domain/author/author.entity';
 import { Category } from 'src/domain/category/category.entity';
@@ -25,7 +29,7 @@ describe('EntityChecker', () => {
     mockAuthorRepo = { findById: jest.fn(), findByIds: jest.fn() } as any;
     mockCategoryRepo = { findById: jest.fn(), findByIds: jest.fn() } as any;
     mockBookRepo = { findById: jest.fn() } as any;
-    mockUserRepo = { findById: jest.fn() } as any;
+    mockUserRepo = { findById: jest.fn(), findByEmail: jest.fn() } as any;
     checker = new EntityChecker(
       mockAuthorRepo,
       mockCategoryRepo,
@@ -56,6 +60,25 @@ describe('EntityChecker', () => {
       const loader = jest.fn().mockRejectedValue(error);
       await expect(checker.ensureExists(loader, 'Irrelevant')).rejects.toBe(
         error,
+      );
+    });
+  });
+
+  describe('ensureNotExists', () => {
+    it('resolves when loader returns null', async () => {
+      const loader = jest.fn().mockResolvedValue(null);
+      await expect(
+        checker.ensureNotExists(loader, 'dup'),
+      ).resolves.toBeUndefined();
+      expect(loader).toHaveBeenCalled();
+    });
+
+    it('throws ConflictException with given message when loader returns non-null', async () => {
+      const entity = { id: 1 };
+      const loader = jest.fn().mockResolvedValue(entity);
+      const message = 'Already exists';
+      await expect(checker.ensureNotExists(loader, message)).rejects.toThrow(
+        new ConflictException(message),
       );
     });
   });
@@ -183,6 +206,27 @@ describe('EntityChecker', () => {
       await expect(checker.ensureCategoriesExist(ids)).rejects.toThrowError(
         'Categories not found for IDs: 6, 7',
       );
+    });
+  });
+
+  describe('ensureUserEmailIsUnique', () => {
+    it('resolves when no user found with email', async () => {
+      mockUserRepo.findByEmail.mockResolvedValue(null);
+      await expect(
+        checker.ensureUserEmailIsUnique('test@example.com'),
+      ).resolves.toBeUndefined();
+      expect(mockUserRepo.findByEmail).toHaveBeenCalledWith('test@example.com');
+    });
+
+    it('throws ConflictException when email is already in use', async () => {
+      const existingUser = { id: 1, email: 'test@example.com' } as User;
+      mockUserRepo.findByEmail.mockResolvedValue(existingUser);
+      await expect(
+        checker.ensureUserEmailIsUnique('test@example.com'),
+      ).rejects.toThrow(ConflictException);
+      await expect(
+        checker.ensureUserEmailIsUnique('test@example.com'),
+      ).rejects.toThrow('test@example.com');
     });
   });
 });

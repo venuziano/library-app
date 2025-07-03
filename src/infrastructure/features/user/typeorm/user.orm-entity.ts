@@ -20,4 +20,4 @@ export class UserOrm extends CommonDatesEntity {
 
   @Column({ name: 'stripe_customer_id', length: 50, nullable: true })
   stripeCustomerId?: string;
-} 
+}

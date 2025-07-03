@@ -16,6 +16,7 @@ import {
   userNotFoundException,
   failedToDeleteUserException,
 } from './user-exceptions';
+import { ConflictException } from '@nestjs/common';
 
 describe('UserService', () => {
   let service: UserService;
@@ -41,6 +42,7 @@ describe('UserService', () => {
     checker = {
       ensureUserExists: jest.fn(),
       ensureExists: jest.fn(),
+      ensureUserEmailIsUnique: jest.fn(),
     } as any;
 
     service = new UserService(repo, cache, checker);
@@ -110,7 +112,7 @@ describe('UserService', () => {
   });
 
   describe('create', () => {
-    it('creates a new user and returns it', async () => {
+    it('creates a new user after ensuring email is unique and returns it', async () => {
       const dto: CreateUserDto = {
         username: 'user2',
         firstname: 'X',
@@ -119,10 +121,12 @@ describe('UserService', () => {
         stripeCustomerId: 'cus_456',
       };
       const created = User.create(dto);
+      checker.ensureUserEmailIsUnique.mockResolvedValueOnce(undefined);
       repo.create.mockResolvedValue(created);
 
       const result = await service.create(dto);
 
+      expect(checker.ensureUserEmailIsUnique).toHaveBeenCalledWith(dto.email);
       expect(repo.create).toHaveBeenCalledWith(
         expect.objectContaining({
           username: 'user2',
@@ -133,6 +137,21 @@ describe('UserService', () => {
         }),
       );
       expect(result).toBe(created);
+    });
+
+    it('throws ConflictException when email is already in use', async () => {
+      const dto: CreateUserDto = {
+        username: 'user2',
+        firstname: 'X',
+        lastname: 'Y',
+        email: 'existing@example.com',
+        stripeCustomerId: 'cus_456',
+      };
+      const conflictError = new ConflictException(dto.email);
+      checker.ensureUserEmailIsUnique.mockRejectedValueOnce(conflictError);
+
+      await expect(service.create(dto)).rejects.toBe(conflictError);
+      expect(checker.ensureUserEmailIsUnique).toHaveBeenCalledWith(dto.email);
     });
   });
 
@@ -154,7 +173,7 @@ describe('UserService', () => {
       await expect(service.update(dto)).rejects.toBe(exception);
     });
 
-    it('updates and returns the mutated user', async () => {
+    it('updates and returns the mutated user after ensuring email is unique', async () => {
       const dto: UpdateUserDto = {
         id: 5,
         username: 'newuser',
@@ -174,16 +193,45 @@ describe('UserService', () => {
         updatedAt: new Date(),
       });
       checker.ensureUserExists.mockResolvedValueOnce(original);
+      checker.ensureUserEmailIsUnique.mockResolvedValueOnce(undefined);
       repo.update.mockResolvedValueOnce(original);
 
       const result = (await service.update(dto))!;
 
+      expect(checker.ensureUserEmailIsUnique).toHaveBeenCalledWith(dto.email);
       expect(result).toBeInstanceOf(User);
       expect(result.username).toBe('newuser');
       expect(result.firstname).toBe('New');
       expect(result.lastname).toBe('Name');
       expect(result.email).toBe('newuser@example.com');
       expect(result.stripeCustomerId).toBe('cus_999');
+    });
+
+    it('throws ConflictException when email is already in use during update', async () => {
+      const dto: UpdateUserDto = {
+        id: 5,
+        username: 'newuser',
+        firstname: 'New',
+        lastname: 'Name',
+        email: 'existing@example.com',
+        stripeCustomerId: 'cus_999',
+      };
+      const original = User.reconstitute({
+        id: 5,
+        username: 'olduser',
+        firstname: 'Old',
+        lastname: 'Name',
+        email: 'olduser@example.com',
+        stripeCustomerId: 'cus_888',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+      checker.ensureUserExists.mockResolvedValueOnce(original);
+      const conflictError = new ConflictException(dto.email);
+      checker.ensureUserEmailIsUnique.mockRejectedValueOnce(conflictError);
+
+      await expect(service.update(dto)).rejects.toBe(conflictError);
+      expect(checker.ensureUserEmailIsUnique).toHaveBeenCalledWith(dto.email);
     });
   });
 
@@ -198,26 +246,47 @@ describe('UserService', () => {
       await expect(service.patch(dto)).rejects.toBe(exception);
     });
 
-    it('patches fields and returns updated user', async () => {
-      const dto: PatchUserDto = { id: 3, firstname: 'NewFirst' };
+    it('patches fields and returns updated user after ensuring email is unique', async () => {
+      const dto: PatchUserDto = { id: 3, email: 'patched@example.com' };
       const original = User.reconstitute({
         id: 3,
         username: 'patchuser',
         firstname: 'OldFirst',
         lastname: 'Last',
-        email: 'patchuser@example.com',
+        email: 'old@example.com',
         stripeCustomerId: 'cus_patch',
         createdAt: new Date(),
         updatedAt: new Date(),
       });
       checker.ensureUserExists.mockResolvedValueOnce(original);
+      checker.ensureUserEmailIsUnique.mockResolvedValueOnce(undefined);
       repo.update.mockResolvedValueOnce(original);
 
       const result = (await service.patch(dto))!;
 
+      expect(checker.ensureUserEmailIsUnique).toHaveBeenCalledWith(dto.email!);
       expect(result).toBeInstanceOf(User);
-      expect(result.firstname).toBe('NewFirst');
-      expect(result.lastname).toBe('Last');
+      expect(result.email).toBe('patched@example.com');
+    });
+
+    it('throws ConflictException when email is already in use during patch', async () => {
+      const dto: PatchUserDto = { id: 3, email: 'existing@example.com' };
+      const original = User.reconstitute({
+        id: 3,
+        username: 'patchuser',
+        firstname: 'OldFirst',
+        lastname: 'Last',
+        email: 'old@example.com',
+        stripeCustomerId: 'cus_patch',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+      checker.ensureUserExists.mockResolvedValueOnce(original);
+      const conflictError = new ConflictException(dto.email!);
+      checker.ensureUserEmailIsUnique.mockRejectedValueOnce(conflictError);
+
+      await expect(service.patch(dto)).rejects.toBe(conflictError);
+      expect(checker.ensureUserEmailIsUnique).toHaveBeenCalledWith(dto.email!);
     });
   });
 

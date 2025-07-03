@@ -58,7 +58,8 @@ export class UserRepositoryImpl implements UserRepository {
         : undefined,
     };
 
-    const [entities, totalItems] = await this.userRepository.findAndCount(query);
+    const [entities, totalItems] =
+      await this.userRepository.findAndCount(query);
 
     const items: User[] = entities.map((entity) => this.toDomain(entity));
 
@@ -72,6 +73,15 @@ export class UserRepositoryImpl implements UserRepository {
 
   private async findOrmById(id: number): Promise<UserOrm | null> {
     return this.userRepository.findOne({ where: { id } });
+  }
+
+  async findByEmail(email: string): Promise<User | null> {
+    console.log('email', email);
+    const foundUser: UserOrm | null = await this.userRepository.findOne({
+      where: { email },
+    });
+    console.log('foundUser', foundUser);
+    return foundUser ? this.toDomain(foundUser) : null;
   }
 
   async findById(id: number): Promise<User | null> {
@@ -162,4 +172,4 @@ export class UserRepositoryImpl implements UserRepository {
       deletedAt: deletedOrm.deletedAt,
     });
   }
-} 
+}

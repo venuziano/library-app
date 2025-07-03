@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   Inject,
   Injectable,
   NotFoundException,
@@ -62,6 +63,13 @@ export class EntityChecker {
     );
   }
 
+  async ensureUserEmailIsUnique(email: string): Promise<void> {
+    await this.ensureNotExists(
+      () => this.userRepository.findByEmail(email),
+      email,
+    );
+  }
+
   async ensureAuthorsExist(ids: number[]): Promise<Author[]> {
     if (!ids || ids.length === 0) {
       throw new BadRequestException('At least one author ID must be provided');
@@ -103,5 +111,13 @@ export class EntityChecker {
     const entity = await fn();
     if (!entity) throw new NotFoundException(throwMessage);
     return entity;
+  }
+
+  public async ensureNotExists<T>(
+    fn: () => Promise<T | null>,
+    throwMessage: string,
+  ): Promise<void> {
+    const entity = await fn();
+    if (entity) throw new ConflictException(throwMessage);
   }
 }
