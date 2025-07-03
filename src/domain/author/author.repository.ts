@@ -8,4 +8,5 @@ export interface AuthorRepository {
   create(author: Author): Promise<Author>;
   update(author: Author): Promise<Author | null>;
   delete(author: Author): Promise<Author | null>;
+  bookCountByAuthor(author: Author): Promise<number>;
 }

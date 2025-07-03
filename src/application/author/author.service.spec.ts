@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/only-throw-error */
 /* eslint-disable @typescript-eslint/unbound-method */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+
 import { AuthorService } from './author.service';
 import { Author } from '../../domain/author/author.entity';
 import { AuthorRepository } from '../../domain/author/author.repository';
@@ -30,6 +30,7 @@ describe('AuthorService', () => {
       create: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
+      bookCountByAuthor: jest.fn(),
     } as any;
     cache = {
       get: jest.fn().mockResolvedValue(undefined),
@@ -194,6 +195,22 @@ describe('AuthorService', () => {
       });
 
       await expect(service.delete(9)).rejects.toBe(exception);
+    });
+
+    it('throws if author has bound books', async () => {
+      const author = Author.reconstitute({
+        id: 9,
+        firstname: 'A',
+        lastname: 'B',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+      checker.ensureAuthorExists.mockResolvedValueOnce(author);
+      repo.bookCountByAuthor.mockResolvedValueOnce(2);
+
+      await expect(service.delete(9)).rejects.toThrow(
+        `Cannot delete author 9 — still bound to 2 book(s).`,
+      );
     });
 
     it('deletes and returns entity', async () => {

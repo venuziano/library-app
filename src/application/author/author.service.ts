@@ -99,6 +99,12 @@ export class AuthorService {
   })
   async delete(id: number): Promise<Author | null> {
     const author = await this.checker.ensureAuthorExists(id);
+    const bookCount = await this.authorRepository.bookCountByAuthor(author);
+    if (bookCount > 0) {
+      throw new Error(
+        `Cannot delete author ${id} — still bound to ${bookCount} book(s).`,
+      );
+    }
     author.delete();
     return this.checker.ensureExists(
       () => this.authorRepository.delete(author),

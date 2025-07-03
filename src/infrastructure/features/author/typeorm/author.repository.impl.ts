@@ -9,6 +9,7 @@ import {
   Pagination,
   PaginationResult,
 } from 'src/domain/pagination/pagination.entity';
+import { BookOrm } from '../../book/typeorm/book.orm-entity';
 
 @Injectable()
 export class AuthorRepositoryImpl implements AuthorRepository {
@@ -118,11 +119,33 @@ export class AuthorRepositoryImpl implements AuthorRepository {
     });
   }
 
+  async bookCountByAuthor(author: Author): Promise<number> {
+    return this.authorRepository.manager
+      .createQueryBuilder(BookOrm, 'book')
+      .innerJoin('book.authors', 'author', 'author.id = :id', {
+        id: author.id,
+      })
+      .getCount();
+  }
+
   async delete(author: Author): Promise<Author | null> {
     const existing: AuthorOrm | null = await this.findOrmById(
       author.id as number,
     );
     if (!existing) return null;
+
+    // const bookCount = await this.authorRepository.manager
+    //   .createQueryBuilder(BookOrm, 'book')
+    //   .innerJoin('book.authors', 'author', 'author.id = :id', {
+    //     id: existing.id,
+    //   })
+    //   .getCount();
+
+    // if (bookCount > 0) {
+    //   throw new Error(
+    //     `Cannot delete author ${existing.id} — still bound to ${bookCount} book(s).`,
+    //   );
+    // }
 
     const now = new Date();
     existing.deletedAt = now;
