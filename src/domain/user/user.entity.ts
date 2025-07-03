@@ -68,7 +68,8 @@ export class User {
     if (props.firstname !== undefined) this.firstname = props.firstname;
     if (props.lastname !== undefined) this.lastname = props.lastname;
     if (props.email !== undefined) this.email = props.email;
-    if (props.stripeCustomerId !== undefined) this.stripeCustomerId = props.stripeCustomerId;
+    if (props.stripeCustomerId !== undefined)
+      this.stripeCustomerId = props.stripeCustomerId;
     this.updatedAt = new Date();
   }
 
@@ -107,4 +108,4 @@ export class User {
       properties.deletedAt,
     );
   }
-} 
+}

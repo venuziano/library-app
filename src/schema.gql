@@ -8,13 +8,16 @@ type PageInfoGQL {
   currentPage: Int!
 }
 
-type AuthorGQL {
+type UserGQL {
   createdAt: DateTime!
   updatedAt: DateTime!
   deletedAt: DateTime
   id: ID!
-  firstname: String!
-  lastname: String!
+  username: String!
+  firstname: String
+  lastname: String
+  email: String!
+  stripeCustomerId: String
 }
 
 """
@@ -22,14 +25,14 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 """
 scalar DateTime
 
-type PaginatedAuthorsGQL {
-  items: [AuthorGQL!]!
+type PaginatedUsersGQL {
+  items: [UserGQL!]!
   pageInfo: PageInfoGQL!
 }
 
 type Query {
-  getAllAuthors(limit: Int! = 50, page: Int! = 0, sort: String! = "createdAt", searchTerm: String, order: SortOrder! = DESC): PaginatedAuthorsGQL!
-  getAuthorById(id: ID!): AuthorGQL
+  getAllUsers(limit: Int! = 50, page: Int! = 0, sort: String! = "createdAt", searchTerm: String, order: SortOrder! = DESC): PaginatedUsersGQL!
+  getUserById(id: ID!): UserGQL
 }
 
 """Sort direction (ascending or descending)"""
@@ -39,25 +42,34 @@ enum SortOrder {
 }
 
 type Mutation {
-  createAuthor(input: CreateAuthorInput!): AuthorGQL!
-  updateAuthor(input: UpdateAuthorInput!): AuthorGQL!
-  patchAuthor(input: PatchAuthorInput!): AuthorGQL!
-  deleteAuthor(id: Int!): AuthorGQL!
+  createUser(input: CreateUserInput!): UserGQL!
+  updateUser(input: UpdateUserInput!): UserGQL!
+  patchUser(input: PatchUserInput!): UserGQL!
+  deleteUser(id: Int!): UserGQL!
 }
 
-input CreateAuthorInput {
-  firstname: String!
-  lastname: String!
+input CreateUserInput {
+  username: String!
+  firstname: String
+  lastname: String
+  email: String!
+  stripeCustomerId: String
 }
 
-input UpdateAuthorInput {
-  firstname: String!
-  lastname: String!
+input UpdateUserInput {
+  username: String!
+  firstname: String
+  lastname: String
+  email: String!
+  stripeCustomerId: String
   id: Int!
 }
 
-input PatchAuthorInput {
+input PatchUserInput {
+  username: String
   firstname: String
   lastname: String
+  email: String
+  stripeCustomerId: String
   id: Int!
 }

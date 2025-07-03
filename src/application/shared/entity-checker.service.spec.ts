@@ -10,18 +10,28 @@ import { bookNotFoundException } from '../book/book-exceptions';
 import { AuthorRepository } from 'src/domain/author/author.repository';
 import { CategoryRepository } from 'src/domain/category/category.repository';
 import { BookRepository } from 'src/domain/book/book.repository';
+import { UserRepository } from 'src/domain/user/user.repository';
+import { User } from 'src/domain/user/user.entity';
+import { userNotFoundException } from '../user/user-exceptions';
 
 describe('EntityChecker', () => {
   let checker: EntityChecker;
   let mockAuthorRepo: jest.Mocked<AuthorRepository>;
   let mockCategoryRepo: jest.Mocked<CategoryRepository>;
   let mockBookRepo: jest.Mocked<BookRepository>;
+  let mockUserRepo: jest.Mocked<UserRepository>;
 
   beforeEach(() => {
     mockAuthorRepo = { findById: jest.fn(), findByIds: jest.fn() } as any;
     mockCategoryRepo = { findById: jest.fn(), findByIds: jest.fn() } as any;
     mockBookRepo = { findById: jest.fn() } as any;
-    checker = new EntityChecker(mockAuthorRepo, mockCategoryRepo, mockBookRepo);
+    mockUserRepo = { findById: jest.fn() } as any;
+    checker = new EntityChecker(
+      mockAuthorRepo,
+      mockCategoryRepo,
+      mockBookRepo,
+      mockUserRepo,
+    );
   });
 
   describe('ensureExists', () => {
@@ -63,6 +73,23 @@ describe('EntityChecker', () => {
       mockBookRepo.findById.mockResolvedValue(null);
       await expect(checker.ensureBookExists(42)).rejects.toThrowError(
         bookNotFoundException(),
+      );
+    });
+  });
+
+  describe('ensureUserExists', () => {
+    it('returns the user when found', async () => {
+      const dummyUser = { id: 1 } as User;
+      mockUserRepo.findById.mockResolvedValue(dummyUser);
+      const result = await checker.ensureUserExists(1);
+      expect(mockUserRepo.findById).toHaveBeenCalledWith(1);
+      expect(result).toBe(dummyUser);
+    });
+
+    it('throws NotFoundException when user not found', async () => {
+      mockUserRepo.findById.mockResolvedValue(null);
+      await expect(checker.ensureUserExists(42)).rejects.toThrowError(
+        userNotFoundException(),
       );
     });
   });

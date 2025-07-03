@@ -1,0 +1,105 @@
+import { Injectable, Inject } from '@nestjs/common';
+
+import { User } from '../../domain/user/user.entity';
+import { UserRepository } from '../../domain/user/user.repository';
+import { CreateUserDto } from './dtos/create-user.dto';
+import { PaginationDto } from '../pagination/pagination.dto';
+import {
+  Pagination,
+  PaginationResult,
+} from '../../domain/pagination/pagination.entity';
+import {
+  Cacheable,
+  InvalidateCache,
+} from 'src/infrastructure/cache/cache.decorator';
+import { MultiLevelCacheService } from 'src/infrastructure/cache/multi-level-cache.service';
+import { userByIdKey, userCacheKey } from 'src/infrastructure/cache/cache-keys';
+import { UpdateUserDto } from './dtos/update-user.dto';
+import { EntityChecker } from '../shared/entity-checker.service';
+import { failedToDeleteUserException } from './user-exceptions';
+import { PatchUserDto } from './dtos/patch-user.dto';
+
+@Injectable()
+export class UserService {
+  constructor(
+    @Inject('UserRepository')
+    private readonly userRepository: UserRepository,
+    public readonly cache: MultiLevelCacheService,
+    private readonly checker: EntityChecker,
+  ) {}
+
+  @Cacheable({ namespace: userCacheKey })
+  findAll(properties: PaginationDto): Promise<PaginationResult<User>> {
+    const { limit, page, sort, order, searchTerm } = properties;
+    const pagination: Pagination = Pagination.of(
+      limit,
+      page,
+      sort,
+      order,
+      searchTerm,
+    );
+    return this.userRepository.findAll(pagination);
+  }
+
+  @Cacheable({ namespace: userByIdKey })
+  async findById(id: number): Promise<User> {
+    return this.checker.ensureUserExists(id);
+  }
+
+  @InvalidateCache({ namespace: userCacheKey })
+  async create(dto: CreateUserDto): Promise<User> {
+    const user: User = User.create({
+      username: dto.username,
+      firstname: dto.firstname,
+      lastname: dto.lastname,
+      email: dto.email,
+      stripeCustomerId: dto.stripeCustomerId,
+    });
+    return this.userRepository.create(user);
+  }
+
+  @InvalidateCache({
+    namespace: [userCacheKey],
+    keyGenerator: (dto: UpdateUserDto) => ({
+      [userByIdKey]: dto.id.toString(),
+    }),
+  })
+  async update(dto: UpdateUserDto): Promise<User | null> {
+    const userToUpdate = await this.checker.ensureUserExists(dto.id);
+    userToUpdate.update({
+      username: dto.username,
+      firstname: dto.firstname,
+      lastname: dto.lastname,
+      email: dto.email,
+      stripeCustomerId: dto.stripeCustomerId,
+    });
+    return this.userRepository.update(userToUpdate);
+  }
+
+  @InvalidateCache({
+    namespace: [userCacheKey],
+    keyGenerator: (dto: PatchUserDto) => ({
+      [userByIdKey]: dto.id.toString(),
+    }),
+  })
+  async patch(dto: PatchUserDto): Promise<User | null> {
+    const user = await this.checker.ensureUserExists(dto.id);
+    user.patch(dto);
+    return this.userRepository.update(user);
+  }
+
+  @InvalidateCache({
+    namespace: [userCacheKey],
+    keyGenerator: (id: number) => ({
+      [userByIdKey]: id.toString(),
+    }),
+  })
+  async delete(id: number): Promise<User | null> {
+    const user = await this.checker.ensureUserExists(id);
+    user.delete();
+    return this.checker.ensureExists(
+      () => this.userRepository.delete(user),
+      failedToDeleteUserException(),
+    );
+  }
+}

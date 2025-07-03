@@ -6,3 +6,6 @@ export const categoryByIdKey: string = 'categoryById';
 
 export const bookCacheKey: string = 'books';
 export const bookByIdKey: string = 'bookById';
+
+export const userCacheKey: string = 'users';
+export const userByIdKey: string = 'userById';

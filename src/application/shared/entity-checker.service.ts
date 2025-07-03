@@ -14,6 +14,9 @@ import { categoryNotFoundException } from '../category/category-exceptions';
 import { BookRepository } from 'src/domain/book/book.repository';
 import { bookNotFoundException } from '../book/book-exceptions';
 import { Book } from 'src/domain/book/book.entity';
+import { User } from 'src/domain/user/user.entity';
+import { UserRepository } from 'src/domain/user/user.repository';
+import { userNotFoundException } from '../user/user-exceptions';
 
 /**
  * Helper to load an entity or throw a NotFoundException.
@@ -27,6 +30,8 @@ export class EntityChecker {
     private readonly categoryRepository: CategoryRepository,
     @Inject('BookRepository')
     private readonly bookRepository: BookRepository,
+    @Inject('UserRepository')
+    private readonly userRepository: UserRepository,
   ) {}
 
   async ensureBookExists(id: number): Promise<Book> {
@@ -47,6 +52,13 @@ export class EntityChecker {
     return this.ensureExists(
       () => this.categoryRepository.findById(id),
       categoryNotFoundException(),
+    );
+  }
+
+  async ensureUserExists(id: number): Promise<User> {
+    return this.ensureExists(
+      () => this.userRepository.findById(id),
+      userNotFoundException(),
     );
   }
 

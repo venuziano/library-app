@@ -1,0 +1,165 @@
+import { Injectable } from '@nestjs/common';
+import { FindManyOptions, ILike, In, Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+
+import { UserOrm } from './user.orm-entity';
+import { UserRepository } from 'src/domain/user/user.repository';
+import { User } from 'src/domain/user/user.entity';
+import {
+  Pagination,
+  PaginationResult,
+} from 'src/domain/pagination/pagination.entity';
+
+@Injectable()
+export class UserRepositoryImpl implements UserRepository {
+  constructor(
+    @InjectRepository(UserOrm)
+    private readonly userRepository: Repository<UserOrm>,
+  ) {}
+
+  private toDomain(user: UserOrm): User {
+    return User.reconstitute({
+      id: user.id,
+      username: user.username,
+      firstname: user.firstname,
+      lastname: user.lastname,
+      email: user.email,
+      stripeCustomerId: user.stripeCustomerId,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+      deletedAt: user.deletedAt,
+    });
+  }
+
+  async findAll(properties: Pagination): Promise<PaginationResult<User>> {
+    const { searchTerm } = properties;
+
+    const query: FindManyOptions<UserOrm> = {
+      take: properties.limit,
+      skip: properties.offset,
+      order: { [properties.sortBy]: properties.order },
+      select: [
+        'id',
+        'username',
+        'firstname',
+        'lastname',
+        'email',
+        'stripeCustomerId',
+        'createdAt',
+        'updatedAt',
+      ],
+      where: searchTerm
+        ? [
+            { username: ILike(`%${searchTerm}%`) },
+            { firstname: ILike(`%${searchTerm}%`) },
+            { lastname: ILike(`%${searchTerm}%`) },
+            { email: ILike(`%${searchTerm}%`) },
+          ]
+        : undefined,
+    };
+
+    const [entities, totalItems] = await this.userRepository.findAndCount(query);
+
+    const items: User[] = entities.map((entity) => this.toDomain(entity));
+
+    return new PaginationResult(
+      items,
+      properties.page,
+      properties.limit,
+      totalItems,
+    );
+  }
+
+  private async findOrmById(id: number): Promise<UserOrm | null> {
+    return this.userRepository.findOne({ where: { id } });
+  }
+
+  async findById(id: number): Promise<User | null> {
+    const foundUser: UserOrm | null = await this.findOrmById(id);
+    return foundUser ? this.toDomain(foundUser) : null;
+  }
+
+  async findByIds(ids: number[]): Promise<User[] | []> {
+    if (!ids || ids.length === 0) return [];
+
+    const foundOrms: UserOrm[] = await this.userRepository.find({
+      where: { id: In(ids) },
+    });
+
+    return foundOrms.map((orm) => this.toDomain(orm));
+  }
+
+  async create(user: User): Promise<User> {
+    const newUser: UserOrm = this.userRepository.create({
+      username: user.username,
+      firstname: user.firstname,
+      lastname: user.lastname,
+      email: user.email,
+      stripeCustomerId: user.stripeCustomerId,
+    });
+
+    const createdUser: UserOrm = await this.userRepository.save(newUser);
+
+    return User.reconstitute({
+      id: createdUser.id,
+      username: createdUser.username,
+      firstname: createdUser.firstname,
+      lastname: createdUser.lastname,
+      email: createdUser.email,
+      stripeCustomerId: createdUser.stripeCustomerId,
+      createdAt: createdUser.createdAt,
+      updatedAt: createdUser.updatedAt,
+      deletedAt: createdUser.deletedAt,
+    });
+  }
+
+  async update(user: User): Promise<User | null> {
+    const toUpdate: UserOrm | undefined = await this.userRepository.preload({
+      id: user.id!,
+      username: user.username,
+      firstname: user.firstname,
+      lastname: user.lastname,
+      email: user.email,
+      stripeCustomerId: user.stripeCustomerId,
+    });
+
+    if (!toUpdate) return null;
+
+    const updatedOrm: UserOrm = await this.userRepository.save(toUpdate);
+
+    return User.reconstitute({
+      id: updatedOrm.id,
+      username: updatedOrm.username,
+      firstname: updatedOrm.firstname,
+      lastname: updatedOrm.lastname,
+      email: updatedOrm.email,
+      stripeCustomerId: updatedOrm.stripeCustomerId,
+      createdAt: updatedOrm.createdAt,
+      updatedAt: updatedOrm.updatedAt,
+      deletedAt: updatedOrm.deletedAt,
+    });
+  }
+
+  async delete(user: User): Promise<User | null> {
+    const existing: UserOrm | null = await this.findOrmById(user.id as number);
+    if (!existing) return null;
+
+    const now = new Date();
+    existing.deletedAt = now;
+    existing.updatedAt = now;
+
+    const deletedOrm = await this.userRepository.save(existing);
+
+    return User.reconstitute({
+      id: deletedOrm.id,
+      username: deletedOrm.username,
+      firstname: deletedOrm.firstname,
+      lastname: deletedOrm.lastname,
+      email: deletedOrm.email,
+      stripeCustomerId: deletedOrm.stripeCustomerId,
+      createdAt: deletedOrm.createdAt,
+      updatedAt: deletedOrm.updatedAt,
+      deletedAt: deletedOrm.deletedAt,
+    });
+  }
+} 
