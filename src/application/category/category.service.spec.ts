@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/only-throw-error */
 /* eslint-disable @typescript-eslint/unbound-method */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+
 import { CategoryService } from './category.service';
 import { Category } from '../../domain/category/category.entity';
 import { CategoryRepository } from '../../domain/category/category.repository';
@@ -30,6 +30,7 @@ describe('CategoryService', () => {
       create: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
+      bookCountByCategory: jest.fn(),
     } as any;
     cache = {
       get: jest.fn().mockResolvedValue(undefined),
@@ -190,6 +191,21 @@ describe('CategoryService', () => {
       });
 
       await expect(service.delete(9)).rejects.toBe(exception);
+    });
+
+    it('throws if category has bound books', async () => {
+      const category = Category.reconstitute({
+        id: 9,
+        name: 'A',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+      checker.ensureCategoryExists.mockResolvedValueOnce(category);
+      repo.bookCountByCategory.mockResolvedValueOnce(2);
+
+      await expect(service.delete(9)).rejects.toThrow(
+        `Cannot delete category 9 — still bound to 2 book(s).`,
+      );
     });
 
     it('should delete and return entity', async () => {

@@ -5,7 +5,8 @@ export interface CategoryRepository {
   findAll(properties: Pagination): Promise<PaginationResult<Category>>;
   findById(id: number): Promise<Category | null>;
   findByIds(ids: number[]): Promise<Category[] | []>;
-  create(Category: Category): Promise<Category>;
-  update(Category: Category): Promise<Category | null>;
-  delete(Category: Category): Promise<Category | null>;
+  create(category: Category): Promise<Category>;
+  update(category: Category): Promise<Category | null>;
+  delete(category: Category): Promise<Category | null>;
+  bookCountByCategory(category: Category): Promise<number>;
 }

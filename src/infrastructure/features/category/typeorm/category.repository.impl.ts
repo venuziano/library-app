@@ -9,6 +9,7 @@ import {
 } from 'src/domain/pagination/pagination.entity';
 import { CategoryRepository } from 'src/domain/category/category.repository';
 import { Category } from 'src/domain/category/category.entity';
+import { BookOrm } from '../../book/typeorm/book.orm-entity';
 
 @Injectable()
 export class CategoryRepositoryImpl implements CategoryRepository {
@@ -106,6 +107,15 @@ export class CategoryRepositoryImpl implements CategoryRepository {
       updatedAt: updatedOrm.updatedAt,
       deletedAt: updatedOrm.deletedAt,
     });
+  }
+
+  async bookCountByCategory(category: Category): Promise<number> {
+    return this.categoryRepository.manager
+      .createQueryBuilder(BookOrm, 'book')
+      .innerJoin('book.categories', 'category', 'category.id = :id', {
+        id: category.id,
+      })
+      .getCount();
   }
 
   async delete(category: Category): Promise<Category | null> {

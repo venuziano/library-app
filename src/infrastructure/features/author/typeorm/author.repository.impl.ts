@@ -134,19 +134,6 @@ export class AuthorRepositoryImpl implements AuthorRepository {
     );
     if (!existing) return null;
 
-    // const bookCount = await this.authorRepository.manager
-    //   .createQueryBuilder(BookOrm, 'book')
-    //   .innerJoin('book.authors', 'author', 'author.id = :id', {
-    //     id: existing.id,
-    //   })
-    //   .getCount();
-
-    // if (bookCount > 0) {
-    //   throw new Error(
-    //     `Cannot delete author ${existing.id} — still bound to ${bookCount} book(s).`,
-    //   );
-    // }
-
     const now = new Date();
     existing.deletedAt = now;
     existing.updatedAt = now;

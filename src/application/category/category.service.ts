@@ -82,9 +82,7 @@ export class CategoryService {
   })
   async patch(dto: PatchCategoryDto): Promise<Category | null> {
     const category = await this.checker.ensureCategoryExists(dto.id);
-
     category.patch(dto);
-
     return this.categoryRepository.update(category);
   }
 
@@ -96,7 +94,13 @@ export class CategoryService {
   })
   async delete(id: number): Promise<Category | null> {
     const category = await this.checker.ensureCategoryExists(id);
-
+    const bookCount =
+      await this.categoryRepository.bookCountByCategory(category);
+    if (bookCount > 0) {
+      throw new Error(
+        `Cannot delete category ${id} — still bound to ${bookCount} book(s).`,
+      );
+    }
     category.delete();
 
     return this.checker.ensureExists(
