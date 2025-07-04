@@ -29,6 +29,7 @@ describe('UserService', () => {
       findAll: jest.fn(),
       findById: jest.fn(),
       findByIds: jest.fn(),
+      findByEmail: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
@@ -109,6 +110,41 @@ describe('UserService', () => {
       });
 
       await expect(service.findById(42)).rejects.toBe(exception);
+    });
+  });
+
+  describe('findByEmail', () => {
+    it('calls checker.ensureUserExists and returns the user', async () => {
+      const user = User.reconstitute({
+        id: 1,
+        username: 'user1',
+        firstname: 'A',
+        lastname: 'B',
+        email: 'user1@example.com',
+        stripeCustomerId: 'cus_123',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+      checker.ensureExists.mockResolvedValue(user);
+
+      const result = await service.findByEmail('user1@example.com');
+
+      expect(checker.ensureExists).toHaveBeenCalledWith(
+        expect.any(Function),
+        userNotFoundException(),
+      );
+      expect(result).toBe(user);
+    });
+
+    it('throws if not found', async () => {
+      const exception = userNotFoundException();
+      checker.ensureExists.mockImplementation(() => {
+        throw exception;
+      });
+
+      await expect(service.findByEmail('user1@example.com')).rejects.toBe(
+        exception,
+      );
     });
   });
 

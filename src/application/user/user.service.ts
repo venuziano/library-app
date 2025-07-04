@@ -16,7 +16,10 @@ import { MultiLevelCacheService } from 'src/infrastructure/cache/multi-level-cac
 import { userByIdKey, userCacheKey } from 'src/infrastructure/cache/cache-keys';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { EntityChecker } from '../shared/entity-checker.service';
-import { failedToDeleteUserException } from './user-exceptions';
+import {
+  failedToDeleteUserException,
+  userNotFoundException,
+} from './user-exceptions';
 import { PatchUserDto } from './dtos/patch-user.dto';
 
 @Injectable()
@@ -44,6 +47,13 @@ export class UserService {
   @Cacheable({ namespace: userByIdKey })
   async findById(id: number): Promise<User> {
     return this.checker.ensureUserExists(id);
+  }
+
+  async findByEmail(email: string): Promise<User> {
+    return this.checker.ensureExists(
+      () => this.userRepository.findByEmail(email),
+      userNotFoundException(),
+    );
   }
 
   @InvalidateCache({ namespace: userCacheKey })
