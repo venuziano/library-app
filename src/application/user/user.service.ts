@@ -49,6 +49,7 @@ export class UserService {
   @InvalidateCache({ namespace: userCacheKey })
   async create(dto: CreateUserDto): Promise<User> {
     await this.checker.ensureUserEmailIsUnique(dto.email);
+    await this.checker.ensureUsernameIsUnique(dto.username);
     const user: User = User.create({
       username: dto.username,
       firstname: dto.firstname,
@@ -67,6 +68,7 @@ export class UserService {
   })
   async update(dto: UpdateUserDto): Promise<User | null> {
     const userToUpdate = await this.checker.ensureUserExists(dto.id);
+    await this.checker.ensureUsernameIsUnique(dto.username);
     await this.checker.ensureUserEmailIsUnique(dto.email);
     userToUpdate.update({
       username: dto.username,
@@ -86,8 +88,13 @@ export class UserService {
   })
   async patch(dto: PatchUserDto): Promise<User | null> {
     const user = await this.checker.ensureUserExists(dto.id);
+
     if (dto.email != null)
       await this.checker.ensureUserEmailIsUnique(dto.email);
+
+    if (dto.username != null)
+      await this.checker.ensureUsernameIsUnique(dto.username);
+
     user.patch(dto);
     return this.userRepository.update(user);
   }

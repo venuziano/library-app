@@ -76,11 +76,16 @@ export class UserRepositoryImpl implements UserRepository {
   }
 
   async findByEmail(email: string): Promise<User | null> {
-    console.log('email', email);
     const foundUser: UserOrm | null = await this.userRepository.findOne({
       where: { email },
     });
-    console.log('foundUser', foundUser);
+    return foundUser ? this.toDomain(foundUser) : null;
+  }
+
+  async findByUsername(username: string): Promise<User | null> {
+    const foundUser: UserOrm | null = await this.userRepository.findOne({
+      where: { username },
+    });
     return foundUser ? this.toDomain(foundUser) : null;
   }
 

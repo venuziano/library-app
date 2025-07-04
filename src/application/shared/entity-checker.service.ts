@@ -70,6 +70,13 @@ export class EntityChecker {
     );
   }
 
+  async ensureUsernameIsUnique(username: string): Promise<void> {
+    await this.ensureNotExists(
+      () => this.userRepository.findByUsername(username),
+      username,
+    );
+  }
+
   async ensureAuthorsExist(ids: number[]): Promise<Author[]> {
     if (!ids || ids.length === 0) {
       throw new BadRequestException('At least one author ID must be provided');

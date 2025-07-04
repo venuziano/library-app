@@ -6,7 +6,7 @@ export class UserOrm extends CommonDatesEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ name: 'username', length: 40 })
+  @Column({ name: 'username', length: 40, unique: true })
   username: string;
 
   @Column({ name: 'firstname', length: 50, nullable: true })

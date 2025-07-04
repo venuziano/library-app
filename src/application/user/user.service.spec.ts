@@ -43,6 +43,7 @@ describe('UserService', () => {
       ensureUserExists: jest.fn(),
       ensureExists: jest.fn(),
       ensureUserEmailIsUnique: jest.fn(),
+      ensureUsernameIsUnique: jest.fn(),
     } as any;
 
     service = new UserService(repo, cache, checker);
@@ -153,6 +154,21 @@ describe('UserService', () => {
       await expect(service.create(dto)).rejects.toBe(conflictError);
       expect(checker.ensureUserEmailIsUnique).toHaveBeenCalledWith(dto.email);
     });
+
+    it('throws ConflictException when username is already in use', async () => {
+      const dto: CreateUserDto = {
+        username: 'user2',
+        firstname: 'X',
+        lastname: 'Y',
+        email: 'existing@example.com',
+        stripeCustomerId: 'cus_456',
+      };
+      const conflictError = new ConflictException(dto.username);
+      checker.ensureUsernameIsUnique.mockRejectedValueOnce(conflictError);
+
+      await expect(service.create(dto)).rejects.toBe(conflictError);
+      expect(checker.ensureUsernameIsUnique).toHaveBeenCalledWith(dto.username);
+    });
   });
 
   describe('update', () => {
@@ -233,6 +249,33 @@ describe('UserService', () => {
       await expect(service.update(dto)).rejects.toBe(conflictError);
       expect(checker.ensureUserEmailIsUnique).toHaveBeenCalledWith(dto.email);
     });
+
+    it('throws ConflictException when username is already in use during update', async () => {
+      const dto: UpdateUserDto = {
+        id: 5,
+        username: 'newuser',
+        firstname: 'New',
+        lastname: 'Name',
+        email: 'existing@example.com',
+        stripeCustomerId: 'cus_999',
+      };
+      const original = User.reconstitute({
+        id: 5,
+        username: 'olduser',
+        firstname: 'Old',
+        lastname: 'Name',
+        email: 'olduser@example.com',
+        stripeCustomerId: 'cus_888',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+      checker.ensureUserExists.mockResolvedValueOnce(original);
+      const conflictError = new ConflictException(dto.username);
+      checker.ensureUsernameIsUnique.mockRejectedValueOnce(conflictError);
+
+      await expect(service.update(dto)).rejects.toBe(conflictError);
+      expect(checker.ensureUsernameIsUnique).toHaveBeenCalledWith(dto.username);
+    });
   });
 
   describe('patch', () => {
@@ -287,6 +330,28 @@ describe('UserService', () => {
 
       await expect(service.patch(dto)).rejects.toBe(conflictError);
       expect(checker.ensureUserEmailIsUnique).toHaveBeenCalledWith(dto.email!);
+    });
+
+    it('throws ConflictException when username is already in use during patch', async () => {
+      const dto: PatchUserDto = { id: 3, username: 'patchuser' };
+      const original = User.reconstitute({
+        id: 3,
+        username: 'patchuser',
+        firstname: 'OldFirst',
+        lastname: 'Last',
+        email: 'old@example.com',
+        stripeCustomerId: 'cus_patch',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+      checker.ensureUserExists.mockResolvedValueOnce(original);
+      const conflictError = new ConflictException(dto.username!);
+      checker.ensureUsernameIsUnique.mockRejectedValueOnce(conflictError);
+
+      await expect(service.patch(dto)).rejects.toBe(conflictError);
+      expect(checker.ensureUsernameIsUnique).toHaveBeenCalledWith(
+        dto.username!,
+      );
     });
   });
 

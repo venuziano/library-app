@@ -3,7 +3,7 @@ import NodeCache from 'node-cache';
 import { RedisCheckService } from './redis-cache.service';
 import { randomUUID } from 'crypto';
 
-import { ICacheService } from 'src/domain/cache/interfaces';
+import { ICacheService } from 'src/domain/cache/cache.interface';
 import { AppEnvConfigService } from '../config/environment-variables/app-env.config';
 import { RedisClientType } from 'redis';
 
@@ -115,7 +115,6 @@ export class MultiLevelCacheService implements ICacheService, OnModuleInit {
     try {
       // parse into unknown first
       const data: unknown = JSON.parse(raw, (_k, v) =>
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         typeof v === 'string' && ISO_8601.test(v) ? new Date(v) : v,
       );
       // now assert to T

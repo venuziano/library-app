@@ -8,4 +8,5 @@ export interface UserRepository {
   update(user: User): Promise<User | null>;
   delete(user: User): Promise<User | null>;
   findByEmail(email: string): Promise<User | null>;
+  findByUsername(username: string): Promise<User | null>;
 }

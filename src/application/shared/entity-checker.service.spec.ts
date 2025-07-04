@@ -29,7 +29,11 @@ describe('EntityChecker', () => {
     mockAuthorRepo = { findById: jest.fn(), findByIds: jest.fn() } as any;
     mockCategoryRepo = { findById: jest.fn(), findByIds: jest.fn() } as any;
     mockBookRepo = { findById: jest.fn() } as any;
-    mockUserRepo = { findById: jest.fn(), findByEmail: jest.fn() } as any;
+    mockUserRepo = {
+      findById: jest.fn(),
+      findByEmail: jest.fn(),
+      findByUsername: jest.fn(),
+    } as any;
     checker = new EntityChecker(
       mockAuthorRepo,
       mockCategoryRepo,
@@ -227,6 +231,27 @@ describe('EntityChecker', () => {
       await expect(
         checker.ensureUserEmailIsUnique('test@example.com'),
       ).rejects.toThrow('test@example.com');
+    });
+  });
+
+  describe('ensureUsernameIsUnique', () => {
+    it('resolves when no user found with username', async () => {
+      mockUserRepo.findByUsername.mockResolvedValue(null);
+      await expect(
+        checker.ensureUsernameIsUnique('test'),
+      ).resolves.toBeUndefined();
+      expect(mockUserRepo.findByUsername).toHaveBeenCalledWith('test');
+    });
+
+    it('throws ConflictException when username is already in use', async () => {
+      const existingUser = { id: 1, email: 'test' } as User;
+      mockUserRepo.findByUsername.mockResolvedValue(existingUser);
+      await expect(checker.ensureUsernameIsUnique('test')).rejects.toThrow(
+        ConflictException,
+      );
+      await expect(checker.ensureUsernameIsUnique('test')).rejects.toThrow(
+        'test',
+      );
     });
   });
 });
