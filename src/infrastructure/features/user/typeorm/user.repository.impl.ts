@@ -21,6 +21,7 @@ export class UserRepositoryImpl implements UserRepository {
     return User.reconstitute({
       id: user.id,
       username: user.username,
+      password: user.password,
       firstname: user.firstname,
       lastname: user.lastname,
       email: user.email,
@@ -107,6 +108,7 @@ export class UserRepositoryImpl implements UserRepository {
   async create(user: User): Promise<User> {
     const newUser: UserOrm = this.userRepository.create({
       username: user.username,
+      password: user.password,
       firstname: user.firstname,
       lastname: user.lastname,
       email: user.email,
@@ -118,6 +120,7 @@ export class UserRepositoryImpl implements UserRepository {
     return User.reconstitute({
       id: createdUser.id,
       username: createdUser.username,
+      password: user.password,
       firstname: createdUser.firstname,
       lastname: createdUser.lastname,
       email: createdUser.email,
@@ -132,6 +135,7 @@ export class UserRepositoryImpl implements UserRepository {
     const toUpdate: UserOrm | undefined = await this.userRepository.preload({
       id: user.id!,
       username: user.username,
+      password: user.password,
       firstname: user.firstname,
       lastname: user.lastname,
       email: user.email,
@@ -145,6 +149,7 @@ export class UserRepositoryImpl implements UserRepository {
     return User.reconstitute({
       id: updatedOrm.id,
       username: updatedOrm.username,
+      password: user.password,
       firstname: updatedOrm.firstname,
       lastname: updatedOrm.lastname,
       email: updatedOrm.email,
@@ -168,6 +173,7 @@ export class UserRepositoryImpl implements UserRepository {
     return User.reconstitute({
       id: deletedOrm.id,
       username: deletedOrm.username,
+      password: user.password,
       firstname: deletedOrm.firstname,
       lastname: deletedOrm.lastname,
       email: deletedOrm.email,

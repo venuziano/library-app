@@ -22,12 +22,27 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 """
 scalar DateTime
 
+type PaginatedAuthorsGQL {
+  items: [AuthorGQL!]!
+  pageInfo: PageInfoGQL!
+}
+
+type CacheEntry {
+  key: String!
+  value: String
+}
+
 type CategoryGQL {
   createdAt: DateTime!
   updatedAt: DateTime!
   deletedAt: DateTime
   id: ID!
   name: String!
+}
+
+type PaginatedCategoriesGQL {
+  items: [CategoryGQL!]!
+  pageInfo: PageInfoGQL!
 }
 
 type BookGQL {
@@ -48,9 +63,33 @@ type PaginatedBooksGQL {
   pageInfo: PageInfoGQL!
 }
 
+type UserGQL {
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  deletedAt: DateTime
+  id: ID!
+  username: String!
+  firstname: String
+  lastname: String
+  email: String!
+  stripeCustomerId: String
+}
+
+type PaginatedUsersGQL {
+  items: [UserGQL!]!
+  pageInfo: PageInfoGQL!
+}
+
 type Query {
+  getAllAuthors(limit: Int! = 50, page: Int! = 0, sort: String! = "createdAt", searchTerm: String, order: SortOrder! = DESC): PaginatedAuthorsGQL!
+  getAuthorById(id: ID!): AuthorGQL
+  getAllCategories(limit: Int! = 50, page: Int! = 0, sort: String! = "createdAt", searchTerm: String, order: SortOrder! = DESC): PaginatedCategoriesGQL!
+  getCategoryById(id: ID!): CategoryGQL
+  cacheKeys: [CacheEntry!]!
   getAllBooks(limit: Int! = 50, page: Int! = 0, sort: String! = "createdAt", searchTerm: String, order: SortOrder! = DESC): PaginatedBooksGQL!
   getBookById(id: ID!): BookGQL
+  getAllUsers(limit: Int! = 50, page: Int! = 0, sort: String! = "createdAt", searchTerm: String, order: SortOrder! = DESC): PaginatedUsersGQL!
+  getUserById(id: ID!): UserGQL
 }
 
 """Sort direction (ascending or descending)"""
@@ -60,10 +99,54 @@ enum SortOrder {
 }
 
 type Mutation {
+  createAuthor(input: CreateAuthorInput!): AuthorGQL!
+  updateAuthor(input: UpdateAuthorInput!): AuthorGQL!
+  patchAuthor(input: PatchAuthorInput!): AuthorGQL!
+  deleteAuthor(id: Int!): AuthorGQL!
+  createCategory(input: CreateCategoryInput!): CategoryGQL!
+  updateCategory(input: UpdateCategoryInput!): CategoryGQL!
+  patchCategory(input: PatchCategoryInput!): CategoryGQL!
+  deleteCategory(id: Int!): CategoryGQL!
+  setCache(input: String!): Boolean!
   createBook(input: CreateBookInput!): BookGQL!
   updateBook(input: UpdateBookInput!): BookGQL!
   patchBook(input: PatchBookInput!): BookGQL!
   deleteBook(id: Int!): BookGQL!
+  createUser(input: CreateUserInput!): UserGQL!
+  updateUser(input: UpdateUserInput!): UserGQL!
+  patchUser(input: PatchUserInput!): UserGQL!
+  deleteUser(id: Int!): UserGQL!
+}
+
+input CreateAuthorInput {
+  firstname: String!
+  lastname: String!
+}
+
+input UpdateAuthorInput {
+  firstname: String!
+  lastname: String!
+  id: Int!
+}
+
+input PatchAuthorInput {
+  firstname: String
+  lastname: String
+  id: Int!
+}
+
+input CreateCategoryInput {
+  name: String!
+}
+
+input UpdateCategoryInput {
+  name: String!
+  id: Int!
+}
+
+input PatchCategoryInput {
+  name: String
+  id: Int!
 }
 
 input CreateBookInput {
@@ -92,5 +175,34 @@ input PatchBookInput {
   pageCount: Int
   categoryIds: [Int!]
   authorIds: [Int!]
+  id: Int!
+}
+
+input CreateUserInput {
+  username: String!
+  password: String!
+  firstname: String
+  lastname: String
+  email: String!
+  stripeCustomerId: String
+}
+
+input UpdateUserInput {
+  username: String!
+  password: String!
+  firstname: String
+  lastname: String
+  email: String!
+  stripeCustomerId: String
+  id: Int!
+}
+
+input PatchUserInput {
+  username: String
+  password: String
+  firstname: String
+  lastname: String
+  email: String
+  stripeCustomerId: String
   id: Int!
 }

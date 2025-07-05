@@ -9,6 +9,11 @@ export class CreateUserDto {
 
   @Type(() => String)
   @IsString()
+  @IsNotEmpty()
+  password: string;
+
+  @Type(() => String)
+  @IsString()
   @IsOptional()
   firstname?: string;
 

@@ -9,6 +9,9 @@ export class UserOrm extends CommonDatesEntity {
   @Column({ name: 'username', length: 40, unique: true })
   username: string;
 
+  @Column({ name: 'password', length: 255 })
+  password: string;
+
   @Column({ name: 'firstname', length: 50, nullable: true })
   firstname?: string;
 

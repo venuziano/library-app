@@ -24,6 +24,7 @@ import {
   userNotFoundException,
 } from './user-exceptions';
 import { PatchUserDto } from './dtos/patch-user.dto';
+import { BcryptPasswordHasher } from 'src/domain/auth/auth.entity';
 
 @Injectable()
 export class UserService {
@@ -32,6 +33,7 @@ export class UserService {
     private readonly userRepository: UserRepository,
     public readonly cache: MultiLevelCacheService,
     private readonly checker: EntityChecker,
+    private readonly hasher: BcryptPasswordHasher,
   ) {}
 
   @Cacheable({ namespace: userCacheKey })
@@ -63,8 +65,11 @@ export class UserService {
   async create(dto: CreateUserDto): Promise<User> {
     await this.checker.ensureUserEmailIsUnique(dto.email);
     await this.checker.ensureUsernameIsUnique(dto.username);
+    console.log('dto', dto);
+    const hashed: string = await this.hasher.hash(dto.password);
     const user: User = User.create({
       username: dto.username,
+      password: hashed,
       firstname: dto.firstname,
       lastname: dto.lastname,
       email: dto.email,
@@ -83,8 +88,10 @@ export class UserService {
     const userToUpdate = await this.checker.ensureUserExists(dto.id);
     await this.checker.ensureUsernameIsUnique(dto.username);
     await this.checker.ensureUserEmailIsUnique(dto.email);
+    if (dto.password) dto.password = await this.hasher.hash(dto.password);
     userToUpdate.update({
       username: dto.username,
+      password: dto.password,
       firstname: dto.firstname,
       lastname: dto.lastname,
       email: dto.email,
@@ -107,6 +114,8 @@ export class UserService {
 
     if (dto.username != null)
       await this.checker.ensureUsernameIsUnique(dto.username);
+
+    if (dto.password) dto.password = await this.hasher.hash(dto.password);
 
     user.patch(dto);
     return this.userRepository.update(user);

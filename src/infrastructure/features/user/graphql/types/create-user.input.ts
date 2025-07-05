@@ -5,6 +5,9 @@ export class CreateUserInput {
   @Field(() => String)
   username: string;
 
+  @Field(() => String)
+  password: string;
+
   @Field(() => String, { nullable: true })
   firstname?: string;
 
