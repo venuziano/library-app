@@ -1,7 +1,10 @@
 import { Injectable, Inject } from '@nestjs/common';
 
 import { User } from '../../domain/user/user.entity';
-import { UserRepository } from '../../domain/user/user.repository';
+import {
+  USER_REPOSITORY_TOKEN,
+  UserRepository,
+} from '../../domain/user/user.repository';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { PaginationDto } from '../pagination/pagination.dto';
 import {
@@ -25,7 +28,7 @@ import { PatchUserDto } from './dtos/patch-user.dto';
 @Injectable()
 export class UserService {
   constructor(
-    @Inject('UserRepository')
+    @Inject(USER_REPOSITORY_TOKEN)
     private readonly userRepository: UserRepository,
     public readonly cache: MultiLevelCacheService,
     private readonly checker: EntityChecker,

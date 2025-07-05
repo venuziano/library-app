@@ -15,7 +15,10 @@ import {
   categoryCacheKey,
 } from 'src/infrastructure/cache/cache-keys';
 import { EntityChecker } from '../shared/entity-checker.service';
-import { CategoryRepository } from 'src/domain/category/category.repository';
+import {
+  CATEGORY_REPOSITORY_TOKEN,
+  CategoryRepository,
+} from 'src/domain/category/category.repository';
 import { Category } from 'src/domain/category/category.entity';
 import { failedToDeleteCategoryException } from './category-exceptions';
 import { CreateCategoryDto } from './dtos/create-category.dto';
@@ -25,7 +28,7 @@ import { PatchCategoryDto } from './dtos/patch-category.dto';
 @Injectable()
 export class CategoryService {
   constructor(
-    @Inject('CategoryRepository')
+    @Inject(CATEGORY_REPOSITORY_TOKEN)
     private readonly categoryRepository: CategoryRepository,
     public readonly cache: MultiLevelCacheService,
     private readonly checker: EntityChecker,

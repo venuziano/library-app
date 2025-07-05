@@ -1,6 +1,8 @@
 import { Pagination, PaginationResult } from '../pagination/pagination.entity';
 import { Author } from './author.entity';
 
+export const AUTHOR_REPOSITORY_TOKEN = 'AuthorRepository';
+
 export interface AuthorRepository {
   findAll(properties: Pagination): Promise<PaginationResult<Author>>;
   findById(id: number): Promise<Author | null>;

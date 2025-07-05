@@ -1,7 +1,10 @@
 import { Injectable, Inject } from '@nestjs/common';
 
 import { Book } from '../../domain/book/book.entity';
-import { BookRepository } from '../../domain/book/book.repository';
+import {
+  BOOK_REPOSITORY_TOKEN,
+  BookRepository,
+} from '../../domain/book/book.repository';
 import { CreateBookDto } from './dtos/create-book.dto';
 import { PaginationDto } from '../pagination/pagination.dto';
 import {
@@ -22,7 +25,7 @@ import { PatchBookDto } from './dtos/patch-book.dto';
 @Injectable()
 export class BookService {
   constructor(
-    @Inject('BookRepository')
+    @Inject(BOOK_REPOSITORY_TOKEN)
     private readonly bookRepository: BookRepository,
     public readonly cache: MultiLevelCacheService,
     private readonly checker: EntityChecker,

@@ -10,12 +10,13 @@ import { CategoryLoader } from 'src/infrastructure/graphql/loaders/category.load
 import { AuthorLoader } from 'src/infrastructure/graphql/loaders/author.loader';
 import { CategoryModule } from '../category/category.module';
 import { AuthorModule } from '../author/author.module';
+import { BOOK_REPOSITORY_TOKEN } from 'src/domain/book/book.repository';
 
 @Module({
   imports: [TypeOrmModule.forFeature([BookOrm]), CategoryModule, AuthorModule],
   providers: [
     BookService,
-    { provide: 'BookRepository', useClass: BookRepositoryImpl },
+    { provide: BOOK_REPOSITORY_TOKEN, useClass: BookRepositoryImpl },
     BookResolver,
     EntityChecker,
     CategoryLoader,

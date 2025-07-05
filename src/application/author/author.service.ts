@@ -1,7 +1,10 @@
 import { Injectable, Inject } from '@nestjs/common';
 
 import { Author } from '../../domain/author/author.entity';
-import { AuthorRepository } from '../../domain/author/author.repository';
+import {
+  AUTHOR_REPOSITORY_TOKEN,
+  AuthorRepository,
+} from '../../domain/author/author.repository';
 import { CreateAuthorDto } from './dtos/create-author.dto';
 import { PaginationDto } from '../pagination/pagination.dto';
 import {
@@ -25,7 +28,7 @@ import { PatchAuthorDto } from './dtos/patch-author.dto';
 @Injectable()
 export class AuthorService {
   constructor(
-    @Inject('AuthorRepository')
+    @Inject(AUTHOR_REPOSITORY_TOKEN)
     private readonly authorRepository: AuthorRepository,
     public readonly cache: MultiLevelCacheService,
     private readonly checker: EntityChecker,

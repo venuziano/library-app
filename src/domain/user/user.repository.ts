@@ -1,6 +1,8 @@
 import { Pagination, PaginationResult } from '../pagination/pagination.entity';
 import { User } from './user.entity';
 
+export const USER_REPOSITORY_TOKEN = 'UserRepository';
+
 export interface UserRepository {
   findAll(properties: Pagination): Promise<PaginationResult<User>>;
   findById(id: number): Promise<User | null>;

@@ -5,12 +5,13 @@ import { UserRepositoryImpl } from './typeorm/user.repository.impl';
 import { UserService } from 'src/application/user/user.service';
 import { UserResolver } from './graphql/user.resolver';
 import { EntityChecker } from 'src/application/shared/entity-checker.service';
+import { USER_REPOSITORY_TOKEN } from 'src/domain/user/user.repository';
 
 @Module({
   imports: [TypeOrmModule.forFeature([UserOrm])],
   providers: [
     UserService,
-    { provide: 'UserRepository', useClass: UserRepositoryImpl },
+    { provide: USER_REPOSITORY_TOKEN, useClass: UserRepositoryImpl },
     UserResolver,
     EntityChecker,
   ],

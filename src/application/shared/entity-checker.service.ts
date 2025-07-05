@@ -7,16 +7,28 @@ import {
 } from '@nestjs/common';
 
 import { Author } from 'src/domain/author/author.entity';
-import { AuthorRepository } from 'src/domain/author/author.repository';
-import { CategoryRepository } from 'src/domain/category/category.repository';
+import {
+  AUTHOR_REPOSITORY_TOKEN,
+  AuthorRepository,
+} from 'src/domain/author/author.repository';
+import {
+  CATEGORY_REPOSITORY_TOKEN,
+  CategoryRepository,
+} from 'src/domain/category/category.repository';
 import { authorNotFoundException } from '../author/author-exceptions';
 import { Category } from 'src/domain/category/category.entity';
 import { categoryNotFoundException } from '../category/category-exceptions';
-import { BookRepository } from 'src/domain/book/book.repository';
+import {
+  BOOK_REPOSITORY_TOKEN,
+  BookRepository,
+} from 'src/domain/book/book.repository';
 import { bookNotFoundException } from '../book/book-exceptions';
 import { Book } from 'src/domain/book/book.entity';
 import { User } from 'src/domain/user/user.entity';
-import { UserRepository } from 'src/domain/user/user.repository';
+import {
+  USER_REPOSITORY_TOKEN,
+  UserRepository,
+} from 'src/domain/user/user.repository';
 import { userNotFoundException } from '../user/user-exceptions';
 
 /**
@@ -25,13 +37,13 @@ import { userNotFoundException } from '../user/user-exceptions';
 @Injectable()
 export class EntityChecker {
   constructor(
-    @Inject('AuthorRepository')
+    @Inject(AUTHOR_REPOSITORY_TOKEN)
     private readonly authorRepository: AuthorRepository,
-    @Inject('CategoryRepository')
+    @Inject(CATEGORY_REPOSITORY_TOKEN)
     private readonly categoryRepository: CategoryRepository,
-    @Inject('BookRepository')
+    @Inject(BOOK_REPOSITORY_TOKEN)
     private readonly bookRepository: BookRepository,
-    @Inject('UserRepository')
+    @Inject(USER_REPOSITORY_TOKEN)
     private readonly userRepository: UserRepository,
   ) {}
 

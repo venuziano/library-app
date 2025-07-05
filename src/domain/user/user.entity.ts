@@ -2,6 +2,7 @@ export class User {
   private constructor(
     public readonly id: number | undefined,
     public username: string,
+    public password: string,
     public firstname: string | undefined,
     public lastname: string | undefined,
     public email: string,
@@ -13,6 +14,7 @@ export class User {
 
   static create(properties: {
     username: string;
+    password: string;
     firstname?: string;
     lastname?: string;
     email: string;
@@ -21,12 +23,16 @@ export class User {
     if (!properties.username) {
       throw new Error('username is required');
     }
+    if (!properties.password) {
+      throw new Error('password is required');
+    }
     if (!properties.email) {
       throw new Error('email is required');
     }
     return new User(
       undefined,
       properties.username,
+      properties.password,
       properties.firstname,
       properties.lastname,
       properties.email,
@@ -38,6 +44,7 @@ export class User {
 
   update(properties: {
     username: string;
+    password: string;
     firstname?: string;
     lastname?: string;
     email: string;
@@ -45,6 +52,9 @@ export class User {
   }) {
     if (!properties.username) {
       throw new Error('username is required');
+    }
+    if (!properties.password) {
+      throw new Error('password is required');
     }
     if (!properties.email) {
       throw new Error('email is required');
@@ -59,12 +69,14 @@ export class User {
 
   patch(props: {
     username?: string;
+    password?: string;
     firstname?: string;
     lastname?: string;
     email?: string;
     stripeCustomerId?: string;
   }) {
     if (props.username !== undefined) this.username = props.username;
+    if (props.password !== undefined) this.password = props.password;
     if (props.firstname !== undefined) this.firstname = props.firstname;
     if (props.lastname !== undefined) this.lastname = props.lastname;
     if (props.email !== undefined) this.email = props.email;
@@ -88,6 +100,7 @@ export class User {
   static reconstitute(properties: {
     id: number;
     username: string;
+    password: string;
     firstname?: string;
     lastname?: string;
     email: string;
@@ -99,6 +112,7 @@ export class User {
     return new User(
       properties.id,
       properties.username,
+      properties.password,
       properties.firstname,
       properties.lastname,
       properties.email,

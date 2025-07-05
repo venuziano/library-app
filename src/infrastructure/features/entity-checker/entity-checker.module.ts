@@ -10,6 +10,10 @@ import { BookOrm } from '../book/typeorm/book.orm-entity';
 import { BookRepositoryImpl } from '../book/typeorm/book.repository.impl';
 import { UserRepositoryImpl } from '../user/typeorm/user.repository.impl';
 import { UserOrm } from '../user/typeorm/user.orm-entity';
+import { USER_REPOSITORY_TOKEN } from 'src/domain/user/user.repository';
+import { BOOK_REPOSITORY_TOKEN } from 'src/domain/book/book.repository';
+import { AUTHOR_REPOSITORY_TOKEN } from 'src/domain/author/author.repository';
+import { CATEGORY_REPOSITORY_TOKEN } from 'src/domain/category/category.repository';
 
 @Global()
 @Module({
@@ -17,17 +21,17 @@ import { UserOrm } from '../user/typeorm/user.orm-entity';
     TypeOrmModule.forFeature([AuthorOrm, CategoryOrm, BookOrm, UserOrm]),
   ],
   providers: [
-    { provide: 'AuthorRepository', useClass: AuthorRepositoryImpl },
-    { provide: 'CategoryRepository', useClass: CategoryRepositoryImpl },
-    { provide: 'BookRepository', useClass: BookRepositoryImpl },
-    { provide: 'UserRepository', useClass: UserRepositoryImpl },
+    { provide: AUTHOR_REPOSITORY_TOKEN, useClass: AuthorRepositoryImpl },
+    { provide: CATEGORY_REPOSITORY_TOKEN, useClass: CategoryRepositoryImpl },
+    { provide: BOOK_REPOSITORY_TOKEN, useClass: BookRepositoryImpl },
+    { provide: USER_REPOSITORY_TOKEN, useClass: UserRepositoryImpl },
     EntityChecker,
   ],
   exports: [
-    'AuthorRepository',
-    'CategoryRepository',
-    'BookRepository',
-    'UserRepository',
+    AUTHOR_REPOSITORY_TOKEN,
+    CATEGORY_REPOSITORY_TOKEN,
+    BOOK_REPOSITORY_TOKEN,
+    USER_REPOSITORY_TOKEN,
     EntityChecker,
   ],
 })

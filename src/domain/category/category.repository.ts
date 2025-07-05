@@ -1,6 +1,8 @@
 import { Pagination, PaginationResult } from '../pagination/pagination.entity';
 import { Category } from './category.entity';
 
+export const CATEGORY_REPOSITORY_TOKEN = 'CategoryRepository';
+
 export interface CategoryRepository {
   findAll(properties: Pagination): Promise<PaginationResult<Category>>;
   findById(id: number): Promise<Category | null>;
