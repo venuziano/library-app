@@ -5,7 +5,11 @@ import { MailerService } from '@nestjs-modules/mailer';
 export class MailService {
   constructor(private readonly mailer: MailerService) {}
 
-  async sendVerificationEmail(to: string, username: string, token: string) {
+  async sendVerificationEmail(
+    to: string,
+    username: string,
+    token: string,
+  ): Promise<void> {
     const confirmationUrl = `https://yourapp.com/confirm?token=${token}`;
     await this.mailer.sendMail({
       to,
@@ -19,7 +23,7 @@ export class MailService {
     });
   }
 
-  async sendWelcomeEmail(to: string, username: string) {
+  async sendWelcomeEmail(to: string, username: string): Promise<void> {
     await this.mailer.sendMail({
       to,
       subject: 'Welcome aboard!',
