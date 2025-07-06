@@ -185,6 +185,41 @@ describe('UserService', () => {
           email: 'user2@example.com',
           stripeCustomerId: 'cus_456',
         }),
+        undefined,
+      );
+      expect(result).toBe(created);
+    });
+
+    it('creates a new user with manager parameter', async () => {
+      const hashedPassword = 'hashed-password';
+      const dto: CreateUserDto = {
+        username: 'user3',
+        password: hashedPassword,
+        firstname: 'Z',
+        lastname: 'W',
+        email: 'user3@example.com',
+        stripeCustomerId: 'cus_789',
+      };
+      const created = User.create(dto);
+      const mockManager = {} as any;
+      checker.ensureUserEmailIsUnique.mockResolvedValueOnce(undefined);
+      checker.ensureUsernameIsUnique.mockResolvedValueOnce(undefined);
+      hasher.hash.mockResolvedValueOnce(hashedPassword);
+      repo.create.mockResolvedValue(created);
+
+      const result = await service.create(dto, mockManager);
+
+      expect(checker.ensureUserEmailIsUnique).toHaveBeenCalledWith(dto.email);
+      expect(repo.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          username: 'user3',
+          password: hashedPassword,
+          firstname: 'Z',
+          lastname: 'W',
+          email: 'user3@example.com',
+          stripeCustomerId: 'cus_789',
+        }),
+        mockManager,
       );
       expect(result).toBe(created);
     });

@@ -1,61 +1,71 @@
-// import { Injectable, UnauthorizedException } from '@nestjs/common';
-// import { JwtService } from '@nestjs/jwt';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { DataSource } from 'typeorm';
 
-// import { BcryptPasswordHasher } from 'src/domain/auth/auth.entity';
-// import { UserService } from '../user/user.service';
-// import { RegisterDto } from './dtos/register.dto';
-// import { LoginDto } from './dtos/login.dto';
-// import { JwtPayload } from 'src/domain/auth/jwt-payload.interface';
+import { BcryptPasswordHasher } from 'src/domain/auth/auth.entity';
+import { UserService } from '../user/user.service';
+import { RegisterDto } from './dtos/register.dto';
+import { LoginDto } from './dtos/login.dto';
+import { JwtPayload } from 'src/domain/auth/jwt-payload.interface';
+import { User } from 'src/domain/user/user.entity';
 
-// @Injectable()
-// export class AuthService {
-//   constructor(
-//     private readonly userService: UserService,
-//     private readonly jwtService: JwtService,
-//     private readonly hasher: BcryptPasswordHasher,
-//   ) {}
+@Injectable()
+export class AuthService {
+  constructor(
+    private readonly userService: UserService,
+    private readonly jwtService: JwtService,
+    private readonly hasher: BcryptPasswordHasher,
+    private readonly dataSource: DataSource,
+  ) {}
 
-//   async signUp(registerDto: RegisterDto): Promise<{ accessToken: string }> {
-//     const hashedPassword = await this.hasher.hash(registerDto.password);
+  async signUp(registerDto: RegisterDto): Promise<{ accessToken: string }> {
+    const result = await this.dataSource.transaction(async (manager) => {
+      const hashed = await this.hasher.hash(registerDto.password);
 
-//     const user = await this.userService.create({
-//       username: registerDto.username,
-//       email: registerDto.email,
-//       password: hashedPassword,
-//       firstname: registerDto.firstname,
-//       lastname: registerDto.lastname,
-//     });
+      const newUser = User.create({
+        username: registerDto.username,
+        email: registerDto.email,
+        password: hashed,
+        firstname: registerDto.firstname,
+        lastname: registerDto.lastname,
+      });
 
-//     const payload: JwtPayload = {
-//       sub: user.id!.toString(),
-//       username: user.username,
-//     };
+      const saved = await this.userService.create(newUser, manager);
 
-//     const accessToken = this.jwtService.sign(payload);
-//     return { accessToken };
-//   }
+      const payload: JwtPayload = {
+        sub: saved.id!.toString(),
+        username: saved.username,
+      };
+      const token = this.jwtService.sign(payload);
 
-//   async signIn(loginDto: LoginDto): Promise<{ accessToken: string }> {
-//     const user = await this.userService.findByEmail(loginDto.email);
-//     if (!user) {
-//       throw new UnauthorizedException('Invalid credentials');
-//     }
+      return { user: saved, token };
+    });
 
-//     const passwordMatches = await this.hasher.compare(
-//       loginDto.password,
-//       user.password,
-//     );
-//     if (!passwordMatches) {
-//       throw new UnauthorizedException('Invalid credentials');
-//     }
+    //retry failed emails
+    return { accessToken: result.token };
+  }
 
-//     const payload: JwtPayload = {
-//       sub: user.id!.toString(),
-//       username: user.username,
-//       // roles: user.roles,
-//     };
+  // async signIn(loginDto: LoginDto): Promise<{ accessToken: string }> {
+  //   const user = await this.userService.findByEmail(loginDto.email);
+  //   if (!user) {
+  //     throw new UnauthorizedException('Invalid credentials');
+  //   }
 
-//     const accessToken = this.jwtService.sign(payload);
-//     return { accessToken };
-//   }
-// }
+  //   const passwordMatches = await this.hasher.compare(
+  //     loginDto.password,
+  //     user.password,
+  //   );
+  //   if (!passwordMatches) {
+  //     throw new UnauthorizedException('Invalid credentials');
+  //   }
+
+  //   const payload: JwtPayload = {
+  //     sub: user.id!.toString(),
+  //     username: user.username,
+  //     // roles: user.roles,
+  //   };
+
+  //   const accessToken = this.jwtService.sign(payload);
+  //   return { accessToken };
+  // }
+}

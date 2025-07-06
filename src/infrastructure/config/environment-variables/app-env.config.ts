@@ -55,4 +55,12 @@ export class AppEnvConfigService {
   get nodeEnv(): string {
     return this.configService.getOrThrow<string>('NODE_ENV');
   }
+
+  get jwtSecret(): string {
+    return this.configService.getOrThrow<string>('JWT_SECRET');
+  }
+
+  get jwtExpiresIn(): string {
+    return this.configService.getOrThrow<string>('JWT_EXPIRES_IN', '1h');
+  }
 }

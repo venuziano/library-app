@@ -193,6 +193,50 @@ describe('UserRepositoryImpl', () => {
       expect(result).toBeInstanceOf(User);
       expect(result.id).toBe(4);
     });
+
+    it('should create and return the new user with manager', async () => {
+      const now = new Date();
+      const domain = User.create({
+        username: 'D',
+        password: 'password',
+        firstname: 'D',
+        lastname: 'E',
+        email: 'd@e.com',
+        stripeCustomerId: 'cus_5',
+      });
+      const mockManager = {
+        getRepository: jest.fn().mockReturnValue(ormRepo),
+      } as any;
+      const orm = {
+        id: 5,
+        username: 'D',
+        password: 'password',
+        firstname: 'D',
+        lastname: 'E',
+        email: 'd@e.com',
+        stripeCustomerId: 'cus_5',
+        createdAt: now,
+        updatedAt: now,
+        deletedAt: null,
+      } as any;
+      ormRepo.create.mockReturnValue(orm);
+      ormRepo.save.mockResolvedValue(orm);
+
+      const result = await repository.create(domain, mockManager);
+
+      expect(mockManager.getRepository).toHaveBeenCalledWith(UserOrm);
+      expect(ormRepo.create).toHaveBeenCalledWith({
+        username: 'D',
+        password: 'password',
+        firstname: 'D',
+        lastname: 'E',
+        email: 'd@e.com',
+        stripeCustomerId: 'cus_5',
+      });
+      expect(ormRepo.save).toHaveBeenCalledWith(orm);
+      expect(result).toBeInstanceOf(User);
+      expect(result.id).toBe(5);
+    });
   });
 
   describe('update', () => {

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { FindManyOptions, ILike, In, Repository } from 'typeorm';
+import { EntityManager, FindManyOptions, ILike, In, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { UserOrm } from './user.orm-entity';
@@ -105,8 +105,12 @@ export class UserRepositoryImpl implements UserRepository {
     return foundOrms.map((orm) => this.toDomain(orm));
   }
 
-  async create(user: User): Promise<User> {
-    const newUser: UserOrm = this.userRepository.create({
+  async create(user: User, manager?: EntityManager): Promise<User> {
+    const repository: Repository<UserOrm> = manager
+      ? manager.getRepository(UserOrm)
+      : this.userRepository;
+
+    const newUserOrm = repository.create({
       username: user.username,
       password: user.password,
       firstname: user.firstname,
@@ -115,19 +119,19 @@ export class UserRepositoryImpl implements UserRepository {
       stripeCustomerId: user.stripeCustomerId,
     });
 
-    const createdUser: UserOrm = await this.userRepository.save(newUser);
+    const savedOrm = await repository.save(newUserOrm);
 
     return User.reconstitute({
-      id: createdUser.id,
-      username: createdUser.username,
+      id: savedOrm.id,
+      username: savedOrm.username,
       password: user.password,
-      firstname: createdUser.firstname,
-      lastname: createdUser.lastname,
-      email: createdUser.email,
-      stripeCustomerId: createdUser.stripeCustomerId,
-      createdAt: createdUser.createdAt,
-      updatedAt: createdUser.updatedAt,
-      deletedAt: createdUser.deletedAt,
+      firstname: savedOrm.firstname,
+      lastname: savedOrm.lastname,
+      email: savedOrm.email,
+      stripeCustomerId: savedOrm.stripeCustomerId,
+      createdAt: savedOrm.createdAt,
+      updatedAt: savedOrm.updatedAt,
+      deletedAt: savedOrm.deletedAt,
     });
   }
 

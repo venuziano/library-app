@@ -22,6 +22,8 @@ import { AppEnvConfigService } from './environment-variables/app-env.config';
         CACHE_TTL_L1: Joi.number().required(),
         CACHE_TTL_L2: Joi.number().required(),
         NODE_ENV: Joi.string().required(),
+        JWT_EXPIRES_IN: Joi.string().required(),
+        JWT_SECRET: Joi.string().required(),
       }),
     }),
   ],

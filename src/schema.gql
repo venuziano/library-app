@@ -8,17 +8,12 @@ type PageInfoGQL {
   currentPage: Int!
 }
 
-type UserGQL {
+type CategoryGQL {
   createdAt: DateTime!
   updatedAt: DateTime!
   deletedAt: DateTime
   id: ID!
-  username: String!
-  password: String!
-  firstname: String
-  lastname: String
-  email: String!
-  stripeCustomerId: String
+  name: String!
 }
 
 """
@@ -26,14 +21,14 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 """
 scalar DateTime
 
-type PaginatedUsersGQL {
-  items: [UserGQL!]!
+type PaginatedCategoriesGQL {
+  items: [CategoryGQL!]!
   pageInfo: PageInfoGQL!
 }
 
 type Query {
-  getAllUsers(limit: Int! = 50, page: Int! = 0, sort: String! = "createdAt", searchTerm: String, order: SortOrder! = DESC): PaginatedUsersGQL!
-  getUserById(id: ID!): UserGQL
+  getAllCategories(limit: Int! = 50, page: Int! = 0, sort: String! = "createdAt", searchTerm: String, order: SortOrder! = DESC): PaginatedCategoriesGQL!
+  getCategoryById(id: ID!): CategoryGQL
 }
 
 """Sort direction (ascending or descending)"""
@@ -43,37 +38,26 @@ enum SortOrder {
 }
 
 type Mutation {
-  createUser(input: CreateUserInput!): UserGQL!
-  updateUser(input: UpdateUserInput!): UserGQL!
-  patchUser(input: PatchUserInput!): UserGQL!
-  deleteUser(id: Int!): UserGQL!
+  createCategory(input: CreateCategoryInput!): CategoryGQL!
+  updateCategory(input: UpdateCategoryInput!): CategoryGQL!
+  patchCategory(input: PatchCategoryInput!): CategoryGQL!
+  deleteCategory(id: Int!): CategoryGQL!
 }
 
-input CreateUserInput {
-  username: String!
-  password: String!
-  firstname: String
-  lastname: String
-  email: String!
-  stripeCustomerId: String
+input CreateCategoryInput {
+  name: String!
 }
 
-input UpdateUserInput {
-  username: String!
-  password: String!
-  firstname: String
-  lastname: String
-  email: String!
-  stripeCustomerId: String
+input UpdateCategoryInput {
+  name: String!
   id: Int!
 }
 
-input PatchUserInput {
-  username: String
-  password: String
+input PatchCategoryInput {
+  name: String
+  id: Int!
+} {
   firstname: String
   lastname: String
-  email: String
-  stripeCustomerId: String
   id: Int!
 }

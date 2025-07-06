@@ -1,3 +1,4 @@
+import { EntityManager } from 'typeorm';
 import { Injectable, Inject } from '@nestjs/common';
 
 import { User } from '../../domain/user/user.entity';
@@ -62,7 +63,7 @@ export class UserService {
   }
 
   @InvalidateCache({ namespace: userCacheKey })
-  async create(dto: CreateUserDto): Promise<User> {
+  async create(dto: CreateUserDto, manager?: EntityManager): Promise<User> {
     await this.checker.ensureUserEmailIsUnique(dto.email);
     await this.checker.ensureUsernameIsUnique(dto.username);
     const hashed: string = await this.hasher.hash(dto.password);
@@ -74,7 +75,7 @@ export class UserService {
       email: dto.email,
       stripeCustomerId: dto.stripeCustomerId,
     });
-    return this.userRepository.create(user);
+    return this.userRepository.create(user, manager);
   }
 
   @InvalidateCache({
