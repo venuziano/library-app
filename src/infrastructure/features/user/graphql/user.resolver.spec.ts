@@ -10,7 +10,6 @@ import {
 } from 'src/application/pagination/helpers';
 
 // Unit tests
-
 describe('UserResolver (unit)', () => {
   let resolver: UserResolver;
   let service: Partial<Record<keyof UserService, jest.Mock>>;
@@ -78,6 +77,7 @@ describe('UserResolver (unit)', () => {
   it('createUser() should delegate to service.create', () => {
     const input: CreateUserInput = {
       username: 'NewUser',
+      password: 'password',
       firstname: 'New',
       lastname: 'User',
       email: 'new@user.com',
@@ -92,6 +92,7 @@ describe('UserResolver (unit)', () => {
     const input: UpdateUserInput = {
       id: 4,
       username: 'UpUser',
+      password: 'password',
       firstname: 'Up',
       lastname: 'Date',
       email: 'up@date.com',
@@ -132,6 +133,7 @@ describe('UserResolver (integration)', () => {
     {
       id: 1,
       username: 'Alice',
+      password: 'password',
       firstname: 'Alice',
       lastname: 'Smith',
       email: 'alice@example.com',
@@ -142,6 +144,7 @@ describe('UserResolver (integration)', () => {
     {
       id: 2,
       username: 'Bob',
+      password: 'password',
       firstname: 'Bob',
       lastname: 'Jones',
       email: 'bob@example.com',
@@ -228,13 +231,19 @@ describe('UserResolver (integration)', () => {
 
   it('executes createUser mutation', () => {
     const mutation = `mutation($input: CreateUserInput!) {
-      createUser(input: $input) { id username email }
+      createUser(input: $input) { id username email password }
     }`;
     return request(app.getHttpServer())
       .post('/graphql')
       .send({
         query: mutation,
-        variables: { input: { username: 'Alice', email: 'alice@example.com' } },
+        variables: {
+          input: {
+            username: 'Alice',
+            email: 'alice@example.com',
+            password: 'password',
+          },
+        },
       })
       .expect(200)
       .expect((res) => {
@@ -247,14 +256,19 @@ describe('UserResolver (integration)', () => {
 
   it('executes updateUser mutation', () => {
     const mutation = `mutation($input: UpdateUserInput!) {
-      updateUser(input: $input) { id username email }
+      updateUser(input: $input) { id username email password }
     }`;
     return request(app.getHttpServer())
       .post('/graphql')
       .send({
         query: mutation,
         variables: {
-          input: { id: 1, username: 'Alice', email: 'alice@example.com' },
+          input: {
+            id: 1,
+            username: 'Alice',
+            email: 'alice@example.com',
+            password: 'password',
+          },
         },
       })
       .expect(200)

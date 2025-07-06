@@ -158,6 +158,7 @@ describe('UserRepositoryImpl', () => {
       const now = new Date();
       const domain = User.create({
         username: 'C',
+        password: 'password',
         firstname: 'C',
         lastname: 'D',
         email: 'c@d.com',
@@ -166,6 +167,7 @@ describe('UserRepositoryImpl', () => {
       const orm = {
         id: 4,
         username: 'C',
+        password: 'password',
         firstname: 'C',
         lastname: 'D',
         email: 'c@d.com',
@@ -181,6 +183,7 @@ describe('UserRepositoryImpl', () => {
 
       expect(ormRepo.create).toHaveBeenCalledWith({
         username: 'C',
+        password: 'password',
         firstname: 'C',
         lastname: 'D',
         email: 'c@d.com',
@@ -198,6 +201,7 @@ describe('UserRepositoryImpl', () => {
       const domain = User.reconstitute({
         id: 5,
         username: 'E',
+        password: 'password',
         firstname: 'E',
         lastname: 'F',
         email: 'e@f.com',
@@ -214,6 +218,7 @@ describe('UserRepositoryImpl', () => {
       const domain = User.reconstitute({
         id: 6,
         username: 'G',
+        password: 'password',
         firstname: 'G',
         lastname: 'H',
         email: 'g@h.com',
@@ -224,6 +229,7 @@ describe('UserRepositoryImpl', () => {
       const ormPre = {
         id: 6,
         username: 'G',
+        password: 'password',
         firstname: 'G',
         lastname: 'H',
         email: 'g@h.com',
@@ -245,6 +251,7 @@ describe('UserRepositoryImpl', () => {
       expect(ormRepo.preload).toHaveBeenCalledWith({
         id: 6,
         username: 'G',
+        password: 'password',
         firstname: 'G',
         lastname: 'H',
         email: 'g@h.com',
@@ -262,6 +269,7 @@ describe('UserRepositoryImpl', () => {
       const domain = User.reconstitute({
         id: 7,
         username: 'I',
+        password: 'password',
         firstname: 'I',
         lastname: 'J',
         email: 'i@j.com',
@@ -278,6 +286,7 @@ describe('UserRepositoryImpl', () => {
       const domain = User.reconstitute({
         id: 8,
         username: 'K',
+        password: 'password',
         firstname: 'K',
         lastname: 'L',
         email: 'k@l.com',

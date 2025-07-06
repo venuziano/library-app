@@ -5,6 +5,7 @@ describe('User Entity (DDD Domain)', () => {
     it('should initialize a new User with undefined id and dates', () => {
       const user = User.create({
         username: 'johndoe',
+        password: 'password',
         firstname: 'John',
         lastname: 'Doe',
         email: 'john@example.com',
@@ -28,6 +29,7 @@ describe('User Entity (DDD Domain)', () => {
       const user = User.reconstitute({
         id: 1,
         username: 'janedoe',
+        password: 'password',
         firstname: 'Jane',
         lastname: 'Smith',
         email: 'jane@example.com',
@@ -53,6 +55,7 @@ describe('User Entity (DDD Domain)', () => {
       const user = User.reconstitute({
         id: 2,
         username: 'alice',
+        password: 'password',
         firstname: 'Alice',
         lastname: 'Wonder',
         email: 'alice@example.com',
@@ -70,6 +73,7 @@ describe('User Entity (DDD Domain)', () => {
     it('should update all fields and set updatedAt', () => {
       const user = User.create({
         username: 'olduser',
+        password: 'password',
         firstname: 'Old',
         lastname: 'Name',
         email: 'old@example.com',
@@ -78,6 +82,7 @@ describe('User Entity (DDD Domain)', () => {
       const before = user.updatedAt;
       user.update({
         username: 'newuser',
+        password: 'password',
         firstname: 'New',
         lastname: 'Name',
         email: 'new@example.com',
@@ -97,6 +102,7 @@ describe('User Entity (DDD Domain)', () => {
     it('should throw when username is empty', () => {
       const user = User.create({
         username: 'user',
+        password: 'password',
         firstname: 'First',
         lastname: 'Last',
         email: 'user@example.com',
@@ -105,6 +111,7 @@ describe('User Entity (DDD Domain)', () => {
       expect(() =>
         user.update({
           username: '',
+          password: 'password',
           firstname: 'First',
           lastname: 'Last',
           email: 'user@example.com',
@@ -116,6 +123,7 @@ describe('User Entity (DDD Domain)', () => {
     it('should throw when email is empty', () => {
       const user = User.create({
         username: 'user',
+        password: 'password',
         firstname: 'First',
         lastname: 'Last',
         email: 'user@example.com',
@@ -124,6 +132,7 @@ describe('User Entity (DDD Domain)', () => {
       expect(() =>
         user.update({
           username: 'user',
+          password: 'password',
           firstname: 'First',
           lastname: 'Last',
           email: '',
@@ -131,12 +140,34 @@ describe('User Entity (DDD Domain)', () => {
         }),
       ).toThrow('email is required');
     });
+
+    it('should throw when password is empty', () => {
+      const user = User.create({
+        username: 'user',
+        password: 'password',
+        firstname: 'First',
+        lastname: 'Last',
+        email: 'user@example.com',
+        stripeCustomerId: 'cus_x',
+      });
+      expect(() =>
+        user.update({
+          username: 'user',
+          password: '',
+          firstname: 'First',
+          lastname: 'Last',
+          email: 'user@example.com',
+          stripeCustomerId: 'cus_x',
+        }),
+      ).toThrow('password is required');
+    });
   });
 
   describe('patch()', () => {
     it('should patch only provided fields and update updatedAt', () => {
       const user = User.create({
         username: 'patchuser',
+        password: 'password',
         firstname: 'A',
         lastname: 'B',
         email: 'patch@example.com',
@@ -160,6 +191,7 @@ describe('User Entity (DDD Domain)', () => {
     it('should handle empty patch object (still set updatedAt)', () => {
       const user = User.create({
         username: 'patchuser',
+        password: 'password',
         firstname: 'A',
         lastname: 'B',
         email: 'patch@example.com',
@@ -180,6 +212,7 @@ describe('User Entity (DDD Domain)', () => {
     it('should throw if id is undefined (not persisted)', () => {
       const user = User.create({
         username: 'willdelete',
+        password: 'password',
         firstname: 'Will',
         lastname: 'Delete',
         email: 'will@delete.com',
@@ -195,6 +228,7 @@ describe('User Entity (DDD Domain)', () => {
       const user = User.reconstitute({
         id: 5,
         username: 'deluser',
+        password: 'password',
         firstname: 'Del',
         lastname: 'Me',
         email: 'del@me.com',
@@ -213,6 +247,7 @@ describe('User Entity (DDD Domain)', () => {
       const user = User.reconstitute({
         id: 7,
         username: 'x',
+        password: 'password',
         firstname: 'X',
         lastname: 'Y',
         email: 'x@y.com',

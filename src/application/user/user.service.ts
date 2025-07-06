@@ -65,7 +65,6 @@ export class UserService {
   async create(dto: CreateUserDto): Promise<User> {
     await this.checker.ensureUserEmailIsUnique(dto.email);
     await this.checker.ensureUsernameIsUnique(dto.username);
-    console.log('dto', dto);
     const hashed: string = await this.hasher.hash(dto.password);
     const user: User = User.create({
       username: dto.username,

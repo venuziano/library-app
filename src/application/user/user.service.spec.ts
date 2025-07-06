@@ -17,12 +17,14 @@ import {
   failedToDeleteUserException,
 } from './user-exceptions';
 import { ConflictException } from '@nestjs/common';
+import { BcryptPasswordHasher } from 'src/domain/auth/auth.entity';
 
 describe('UserService', () => {
   let service: UserService;
   let repo: jest.Mocked<UserRepository>;
   let cache: jest.Mocked<MultiLevelCacheService>;
   let checker: jest.Mocked<EntityChecker>;
+  let hasher: jest.Mocked<BcryptPasswordHasher>;
 
   beforeEach(() => {
     repo = {
@@ -47,7 +49,11 @@ describe('UserService', () => {
       ensureUsernameIsUnique: jest.fn(),
     } as any;
 
-    service = new UserService(repo, cache, checker);
+    hasher = {
+      hash: jest.fn(),
+    } as any;
+
+    service = new UserService(repo, cache, checker, hasher);
   });
 
   describe('findAll', () => {
@@ -88,6 +94,7 @@ describe('UserService', () => {
       const user = User.reconstitute({
         id: 1,
         username: 'user1',
+        password: 'password',
         firstname: 'A',
         lastname: 'B',
         email: 'user1@example.com',
@@ -118,6 +125,7 @@ describe('UserService', () => {
       const user = User.reconstitute({
         id: 1,
         username: 'user1',
+        password: 'password',
         firstname: 'A',
         lastname: 'B',
         email: 'user1@example.com',
@@ -150,8 +158,10 @@ describe('UserService', () => {
 
   describe('create', () => {
     it('creates a new user after ensuring email is unique and returns it', async () => {
+      const hashedPassword = 'hashed-password';
       const dto: CreateUserDto = {
         username: 'user2',
+        password: hashedPassword,
         firstname: 'X',
         lastname: 'Y',
         email: 'user2@example.com',
@@ -159,6 +169,8 @@ describe('UserService', () => {
       };
       const created = User.create(dto);
       checker.ensureUserEmailIsUnique.mockResolvedValueOnce(undefined);
+      checker.ensureUsernameIsUnique.mockResolvedValueOnce(undefined);
+      hasher.hash.mockResolvedValueOnce(hashedPassword);
       repo.create.mockResolvedValue(created);
 
       const result = await service.create(dto);
@@ -167,6 +179,7 @@ describe('UserService', () => {
       expect(repo.create).toHaveBeenCalledWith(
         expect.objectContaining({
           username: 'user2',
+          password: hashedPassword,
           firstname: 'X',
           lastname: 'Y',
           email: 'user2@example.com',
@@ -179,6 +192,7 @@ describe('UserService', () => {
     it('throws ConflictException when email is already in use', async () => {
       const dto: CreateUserDto = {
         username: 'user2',
+        password: 'password',
         firstname: 'X',
         lastname: 'Y',
         email: 'existing@example.com',
@@ -194,6 +208,7 @@ describe('UserService', () => {
     it('throws ConflictException when username is already in use', async () => {
       const dto: CreateUserDto = {
         username: 'user2',
+        password: 'password',
         firstname: 'X',
         lastname: 'Y',
         email: 'existing@example.com',
@@ -212,6 +227,7 @@ describe('UserService', () => {
       const dto: UpdateUserDto = {
         id: 5,
         username: 'user3',
+        password: 'password',
         firstname: 'F',
         lastname: 'L',
         email: 'user3@example.com',
@@ -225,9 +241,11 @@ describe('UserService', () => {
       await expect(service.update(dto)).rejects.toBe(exception);
     });
 
-    it('updates and returns the mutated user after ensuring email is unique', async () => {
+    it('updates and returns the mutated user after ensuring username/email are unique and hashing the password', async () => {
+      const hashedPassword = 'hashed-password';
       const dto: UpdateUserDto = {
         id: 5,
+        password: hashedPassword,
         username: 'newuser',
         firstname: 'New',
         lastname: 'Name',
@@ -237,6 +255,7 @@ describe('UserService', () => {
       const original = User.reconstitute({
         id: 5,
         username: 'olduser',
+        password: 'old-hash',
         firstname: 'Old',
         lastname: 'Name',
         email: 'olduser@example.com',
@@ -244,25 +263,46 @@ describe('UserService', () => {
         createdAt: new Date(),
         updatedAt: new Date(),
       });
+
       checker.ensureUserExists.mockResolvedValueOnce(original);
+      checker.ensureUsernameIsUnique.mockResolvedValueOnce(undefined);
       checker.ensureUserEmailIsUnique.mockResolvedValueOnce(undefined);
-      repo.update.mockResolvedValueOnce(original);
+      hasher.hash.mockResolvedValueOnce(hashedPassword);
 
-      const result = (await service.update(dto))!;
+      repo.update.mockImplementationOnce((user) => Promise.resolve(user));
 
+      const result = await service.update(dto);
+
+      expect(checker.ensureUserExists).toHaveBeenCalledWith(dto.id);
+      expect(checker.ensureUsernameIsUnique).toHaveBeenCalledWith(dto.username);
       expect(checker.ensureUserEmailIsUnique).toHaveBeenCalledWith(dto.email);
+      expect(hasher.hash).toHaveBeenCalledWith(dto.password);
+
+      expect(repo.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: dto.id,
+          username: dto.username,
+          firstname: dto.firstname,
+          lastname: dto.lastname,
+          email: dto.email,
+          stripeCustomerId: dto.stripeCustomerId,
+        }),
+      );
+
       expect(result).toBeInstanceOf(User);
-      expect(result.username).toBe('newuser');
-      expect(result.firstname).toBe('New');
-      expect(result.lastname).toBe('Name');
-      expect(result.email).toBe('newuser@example.com');
-      expect(result.stripeCustomerId).toBe('cus_999');
+      expect(result!.username).toBe(dto.username);
+      expect(result!.firstname).toBe(dto.firstname);
+      expect(result!.lastname).toBe(dto.lastname);
+      expect(result!.email).toBe(dto.email);
+      expect(result!.stripeCustomerId).toBe(dto.stripeCustomerId);
+      expect(result!.password).toBe('old-hash');
     });
 
     it('throws ConflictException when email is already in use during update', async () => {
       const dto: UpdateUserDto = {
         id: 5,
         username: 'newuser',
+        password: 'password',
         firstname: 'New',
         lastname: 'Name',
         email: 'existing@example.com',
@@ -271,6 +311,7 @@ describe('UserService', () => {
       const original = User.reconstitute({
         id: 5,
         username: 'olduser',
+        password: 'password',
         firstname: 'Old',
         lastname: 'Name',
         email: 'olduser@example.com',
@@ -290,6 +331,7 @@ describe('UserService', () => {
       const dto: UpdateUserDto = {
         id: 5,
         username: 'newuser',
+        password: 'password',
         firstname: 'New',
         lastname: 'Name',
         email: 'existing@example.com',
@@ -298,6 +340,7 @@ describe('UserService', () => {
       const original = User.reconstitute({
         id: 5,
         username: 'olduser',
+        password: 'password',
         firstname: 'Old',
         lastname: 'Name',
         email: 'olduser@example.com',
@@ -330,6 +373,7 @@ describe('UserService', () => {
       const original = User.reconstitute({
         id: 3,
         username: 'patchuser',
+        password: 'password',
         firstname: 'OldFirst',
         lastname: 'Last',
         email: 'old@example.com',
@@ -337,15 +381,33 @@ describe('UserService', () => {
         createdAt: new Date(),
         updatedAt: new Date(),
       });
+
       checker.ensureUserExists.mockResolvedValueOnce(original);
       checker.ensureUserEmailIsUnique.mockResolvedValueOnce(undefined);
-      repo.update.mockResolvedValueOnce(original);
+      repo.update.mockImplementationOnce((user) => Promise.resolve(user));
 
-      const result = (await service.patch(dto))!;
+      const result = await service.patch(dto);
 
+      expect(checker.ensureUserExists).toHaveBeenCalledWith(dto.id);
       expect(checker.ensureUserEmailIsUnique).toHaveBeenCalledWith(dto.email!);
+      expect(checker.ensureUsernameIsUnique).not.toHaveBeenCalled();
+      expect(hasher.hash).not.toHaveBeenCalled();
+
+      expect(repo.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: dto.id,
+          username: original.username,
+          password: original.password,
+          firstname: original.firstname,
+          lastname: original.lastname,
+          email: dto.email,
+          stripeCustomerId: original.stripeCustomerId,
+        }),
+      );
+
       expect(result).toBeInstanceOf(User);
-      expect(result.email).toBe('patched@example.com');
+      expect(result!.email).toBe(dto.email);
+      expect(result!.password).toBe(original.password);
     });
 
     it('throws ConflictException when email is already in use during patch', async () => {
@@ -353,6 +415,7 @@ describe('UserService', () => {
       const original = User.reconstitute({
         id: 3,
         username: 'patchuser',
+        password: 'password',
         firstname: 'OldFirst',
         lastname: 'Last',
         email: 'old@example.com',
@@ -373,6 +436,7 @@ describe('UserService', () => {
       const original = User.reconstitute({
         id: 3,
         username: 'patchuser',
+        password: 'password',
         firstname: 'OldFirst',
         lastname: 'Last',
         email: 'old@example.com',
@@ -405,6 +469,7 @@ describe('UserService', () => {
       const user = User.reconstitute({
         id: 9,
         username: 'deluser',
+        password: 'password',
         firstname: 'A',
         lastname: 'B',
         email: 'deluser@example.com',
@@ -426,6 +491,7 @@ describe('UserService', () => {
       const user = User.reconstitute({
         id: 9,
         username: 'deluser',
+        password: 'password',
         firstname: 'A',
         lastname: 'B',
         email: 'deluser@example.com',

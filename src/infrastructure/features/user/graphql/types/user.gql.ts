@@ -11,6 +11,9 @@ export class UserGQL extends CommonDatesGQL {
   @Field()
   username: string;
 
+  @Field()
+  password: string;
+
   @Field({ nullable: true })
   firstname?: string;
 
