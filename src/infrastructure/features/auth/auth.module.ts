@@ -7,6 +7,7 @@ import { AuthResolver } from './graphql/auth.resolver';
 import { AppConfigModule } from 'src/infrastructure/config/app-config.module';
 import { AppEnvConfigService } from 'src/infrastructure/config/environment-variables/app-env.config';
 import { UserModule } from '../user/user.module';
+import { MailModule } from 'src/infrastructure/mail/mail.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { UserModule } from '../user/user.module';
       }),
     }),
     UserModule,
+    MailModule,
   ],
   providers: [AuthService, BcryptPasswordHasher, AuthResolver],
   exports: [AuthService],

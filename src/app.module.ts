@@ -15,6 +15,7 @@ import { SharedModule } from './infrastructure/features/entity-checker/entity-ch
 import { BookModule } from './infrastructure/features/book/book.module';
 import { UserModule } from './infrastructure/features/user/user.module';
 import { AuthModule } from './infrastructure/features/auth/auth.module';
+import { MailModule } from './infrastructure/mail/mail.module';
 
 const gqlLogger: Logger = new Logger('GraphQL');
 
@@ -27,6 +28,7 @@ const gqlLogger: Logger = new Logger('GraphQL');
     InfrastructureCacheModule,
     LoggingModule,
     SharedModule,
+    MailModule,
 
     GraphQLModule.forRoot({
       driver: ApolloDriver,

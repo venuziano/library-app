@@ -8,6 +8,7 @@ import { RegisterDto } from './dtos/register.dto';
 import { LoginDto } from './dtos/login.dto';
 import { JwtPayload } from 'src/domain/auth/jwt-payload.interface';
 import { User } from 'src/domain/user/user.entity';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class AuthService {
@@ -16,6 +17,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly hasher: BcryptPasswordHasher,
     private readonly dataSource: DataSource,
+    private readonly mailService: MailService,
   ) {}
 
   async signUp(registerDto: RegisterDto): Promise<{ accessToken: string }> {
@@ -40,6 +42,12 @@ export class AuthService {
 
       return { user: saved, token };
     });
+
+    await this.mailService.sendVerificationEmail(
+      'test@asd.com',
+      result.user.username,
+      result.token,
+    );
 
     //retry failed emails
     return { accessToken: result.token };

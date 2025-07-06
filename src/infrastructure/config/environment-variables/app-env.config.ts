@@ -63,4 +63,28 @@ export class AppEnvConfigService {
   get jwtExpiresIn(): string {
     return this.configService.getOrThrow<string>('JWT_EXPIRES_IN', '1h');
   }
+
+  get smtpMailHost(): string {
+    return this.configService.getOrThrow<string>('MAIL_HOST');
+  }
+
+  get smtpMailPort(): number {
+    return this.configService.getOrThrow<number>('MAIL_PORT');
+  }
+
+  get smtpMailSecure(): boolean {
+    return this.configService.getOrThrow<boolean>('MAIL_SECURE');
+  }
+
+  get smtpMailUser(): string {
+    return this.configService.getOrThrow<string>('MAIL_USER', '');
+  }
+
+  get smtpMailPassword(): string {
+    return this.configService.getOrThrow<string>('MAIL_PASSWORD', '');
+  }
+
+  get smtpMailFrom(): string {
+    return this.configService.getOrThrow<string>('MAIL_FROM', 'No Reply');
+  }
 }

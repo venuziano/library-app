@@ -9,6 +9,7 @@ services:
       - redis-data:/data
 
   app:
+    env_file: .env
     build: .
     ports:
       - "3010:3010"  
@@ -17,6 +18,7 @@ services:
       - ./node_modules:/src/node_modules
     depends_on:
       - postgres
+      - mailhog
     environment:
       API_PORT: ${API_PORT}
       PG_TYPE: ${PG_TYPE}
@@ -40,6 +42,19 @@ services:
       - "5432:5432"
     volumes:
       - library-app-pg-data:/var/lib/postgresql/data
+
+  mailhog:
+    image: mailhog/mailhog
+    container_name: mailhog
+    restart: unless-stopped
+    environment:
+      MH_STORAGE: maildir                  # switch from in-memory to maildir on disk :contentReference[oaicite:0]{index=0}
+      MH_MAILDIR_PATH: /mailhog/data       # where on the container to store the maildir
+    volumes:
+      - ./mailhog_data:/mailhog/data
+    ports:
+      - '1025:1025'  # SMTP
+      - '8025:8025'  # Web UI
 
 volumes:
   redis-data:
