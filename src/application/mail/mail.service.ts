@@ -8,9 +8,9 @@ export class MailService {
   async sendVerificationEmail(
     to: string,
     username: string,
-    token: string,
+    code: string,
   ): Promise<void> {
-    const confirmationUrl = `https://yourapp.com/confirm?token=${token}`;
+    const confirmationUrl = `https://yourapp.com/verify?code=${code}`;
     await this.mailer.sendMail({
       to,
       subject: 'Confirm your email',

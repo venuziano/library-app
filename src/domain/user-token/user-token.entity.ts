@@ -7,7 +7,6 @@ export class UserToken {
     public tokenType: TokenType,
     public code: string,
     public expiresAt: Date,
-    public verifiedAt: Date | undefined,
     public consumedAt: Date | undefined,
     public createdAt: Date | undefined,
   ) {}
@@ -37,7 +36,6 @@ export class UserToken {
       expiresAt,
       undefined,
       undefined,
-      undefined,
     );
   }
 
@@ -57,19 +55,6 @@ export class UserToken {
     }
   }
 
-  verify(): void {
-    if (this.verifiedAt) {
-      throw new Error(`Token with id ${this.id} is already verified`);
-    }
-    if (this.consumedAt) {
-      throw new Error(`Token with id ${this.id} is already consumed`);
-    }
-    if (this.expiresAt < new Date()) {
-      throw new Error(`Token with id ${this.id} has expired`);
-    }
-    this.verifiedAt = new Date();
-  }
-
   consume(): void {
     if (this.consumedAt) {
       throw new Error(`Token with id ${this.id} is already consumed`);
@@ -81,15 +66,11 @@ export class UserToken {
   }
 
   isExpired(): boolean {
-    return this.expiresAt < new Date();
-  }
-
-  isVerified(): boolean {
-    return this.verifiedAt !== undefined;
+    return Date.now() > this.expiresAt.getTime();
   }
 
   isConsumed(): boolean {
-    return this.consumedAt !== undefined;
+    return this.consumedAt != null;
   }
 
   static reconstitute(properties: {
@@ -98,7 +79,6 @@ export class UserToken {
     tokenType: TokenType;
     code: string;
     expiresAt: Date;
-    verifiedAt?: Date;
     consumedAt?: Date;
     createdAt: Date;
   }): UserToken {
@@ -108,7 +88,6 @@ export class UserToken {
       properties.tokenType,
       properties.code,
       properties.expiresAt,
-      properties.verifiedAt,
       properties.consumedAt,
       properties.createdAt,
     );

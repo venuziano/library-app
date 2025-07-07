@@ -1,4 +1,3 @@
-import { Pagination, PaginationResult } from '../pagination/pagination.entity';
 import { UserToken } from './user-token.entity';
 import { TokenType } from './token-type.enum';
 import { EntityManager } from 'typeorm';
@@ -6,9 +5,9 @@ import { EntityManager } from 'typeorm';
 export const USER_TOKEN_REPOSITORY_TOKEN = 'UserTokenRepository';
 
 export interface UserTokenRepository {
-  findAll(properties: Pagination): Promise<PaginationResult<UserToken>>;
+  // findAll(properties: Pagination): Promise<PaginationResult<UserToken>>;
   findById(id: number): Promise<UserToken | null>;
-  findByUserId(userId: number): Promise<UserToken[]>;
+  // findByUserId(userId: number): Promise<UserToken[]>;
   findByCode(code: string): Promise<UserToken | null>;
   findByUserIdAndType(
     userId: number,

@@ -17,6 +17,9 @@ import { BookRepository } from 'src/domain/book/book.repository';
 import { UserRepository } from 'src/domain/user/user.repository';
 import { User } from 'src/domain/user/user.entity';
 import { userNotFoundException } from '../user/user-exceptions';
+import { UserToken } from 'src/domain/user-token/user-token.entity';
+import { UserTokenRepository } from 'src/domain/user-token/user-token.repository';
+import { userTokenNotFoundException } from '../user-token/user-token-exceptions';
 
 describe('EntityChecker', () => {
   let checker: EntityChecker;
@@ -24,6 +27,7 @@ describe('EntityChecker', () => {
   let mockCategoryRepo: jest.Mocked<CategoryRepository>;
   let mockBookRepo: jest.Mocked<BookRepository>;
   let mockUserRepo: jest.Mocked<UserRepository>;
+  let mockUserTokenRepo: jest.Mocked<UserTokenRepository>;
 
   beforeEach(() => {
     mockAuthorRepo = { findById: jest.fn(), findByIds: jest.fn() } as any;
@@ -34,11 +38,13 @@ describe('EntityChecker', () => {
       findByEmail: jest.fn(),
       findByUsername: jest.fn(),
     } as any;
+    mockUserTokenRepo = { findById: jest.fn() } as any;
     checker = new EntityChecker(
       mockAuthorRepo,
       mockCategoryRepo,
       mockBookRepo,
       mockUserRepo,
+      mockUserTokenRepo,
     );
   });
 
@@ -117,6 +123,23 @@ describe('EntityChecker', () => {
       mockUserRepo.findById.mockResolvedValue(null);
       await expect(checker.ensureUserExists(42)).rejects.toThrowError(
         userNotFoundException(),
+      );
+    });
+  });
+
+  describe('ensureUserTokenExists', () => {
+    it('returns the user token when found', async () => {
+      const dummyUserToken = { id: 1 } as UserToken;
+      mockUserTokenRepo.findById.mockResolvedValue(dummyUserToken);
+      const result = await checker.ensureUserTokenExists(1);
+      expect(mockUserTokenRepo.findById).toHaveBeenCalledWith(1);
+      expect(result).toBe(dummyUserToken);
+    });
+
+    it('throws NotFoundException when user token not found', async () => {
+      mockUserTokenRepo.findById.mockResolvedValue(null);
+      await expect(checker.ensureUserTokenExists(42)).rejects.toThrowError(
+        userTokenNotFoundException(),
       );
     });
   });

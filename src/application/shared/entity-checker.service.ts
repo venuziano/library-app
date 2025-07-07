@@ -30,6 +30,12 @@ import {
   UserRepository,
 } from 'src/domain/user/user.repository';
 import { userNotFoundException } from '../user/user-exceptions';
+import { UserToken } from 'src/domain/user-token/user-token.entity';
+import {
+  USER_TOKEN_REPOSITORY_TOKEN,
+  UserTokenRepository,
+} from 'src/domain/user-token/user-token.repository';
+import { userTokenNotFoundException } from '../user-token/user-token-exceptions';
 
 /**
  * Helper to load an entity or throw a NotFoundException.
@@ -45,6 +51,8 @@ export class EntityChecker {
     private readonly bookRepository: BookRepository,
     @Inject(USER_REPOSITORY_TOKEN)
     private readonly userRepository: UserRepository,
+    @Inject(USER_TOKEN_REPOSITORY_TOKEN)
+    private readonly userTokenRepository: UserTokenRepository,
   ) {}
 
   async ensureBookExists(id: number): Promise<Book> {
@@ -72,6 +80,13 @@ export class EntityChecker {
     return this.ensureExists(
       () => this.userRepository.findById(id),
       userNotFoundException(),
+    );
+  }
+
+  async ensureUserTokenExists(id: number): Promise<UserToken> {
+    return this.ensureExists(
+      () => this.userTokenRepository.findById(id),
+      userTokenNotFoundException(),
     );
   }
 

@@ -27,9 +27,6 @@ export class UserTokenOrm {
   @Column({ name: 'expires_at', type: 'timestamptz' })
   expiresAt: Date;
 
-  @Column({ name: 'verified_at', type: 'timestamptz', nullable: true })
-  verifiedAt?: Date;
-
   @Column({ name: 'consumed_at', type: 'timestamptz', nullable: true })
   consumedAt?: Date;
 

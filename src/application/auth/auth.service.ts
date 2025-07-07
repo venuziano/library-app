@@ -1,6 +1,6 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { DataSource } from 'typeorm';
+import { DataSource, EntityManager } from 'typeorm';
 import { randomBytes } from 'crypto';
 
 import { BcryptPasswordHasher } from 'src/domain/auth/auth.entity';
@@ -25,11 +25,40 @@ export class AuthService {
     private readonly userTokenService: UserTokenService,
   ) {}
 
+  private async createVerificationToken(
+    user: User,
+    manager?: EntityManager,
+  ): Promise<string> {
+    const verificationCode: string = randomBytes(32).toString('hex');
+
+    await this.userTokenService.create(
+      {
+        userId: user.id!,
+        tokenType: TokenType.EMAIL_VERIFICATION,
+        code: verificationCode,
+      },
+      manager,
+    );
+
+    return verificationCode;
+  }
+
+  private async sendVerificationEmail(
+    user: User,
+    verificationCode: string,
+  ): Promise<void> {
+    await this.mailService.sendVerificationEmail(
+      user.email,
+      user.username,
+      verificationCode,
+    );
+  }
+
   async signUp(registerDto: RegisterDto): Promise<{ accessToken: string }> {
     const result = await this.dataSource.transaction(async (manager) => {
-      const hashed = await this.hasher.hash(registerDto.password);
+      const hashed: string = await this.hasher.hash(registerDto.password);
 
-      const newUser = User.create({
+      const newUser: User = User.create({
         username: registerDto.username,
         email: registerDto.email,
         password: hashed,
@@ -37,17 +66,11 @@ export class AuthService {
         lastname: registerDto.lastname,
       });
 
-      const saved = await this.userService.create(newUser, manager);
+      const saved: User = await this.userService.create(newUser, manager);
 
-      // Generate verification token
-      const verificationCode = randomBytes(32).toString('hex');
-
-      await this.userTokenService.create(
-        {
-          userId: saved.id!,
-          tokenType: TokenType.EMAIL_VERIFICATION,
-          code: verificationCode,
-        },
+      // Generate verification token within transaction
+      const verificationCode: string = await this.createVerificationToken(
+        saved,
         manager,
       );
 
@@ -60,18 +83,15 @@ export class AuthService {
       return { user: saved, token, verificationCode };
     });
 
-    await this.mailService.sendVerificationEmail(
-      result.user.email,
-      result.user.username,
-      result.verificationCode,
-    );
+    // retry if fail to send email
+    await this.sendVerificationEmail(result.user, result.verificationCode);
 
-    //retry failed emails
     return { accessToken: result.token };
   }
 
   async verifyEmail(code: string): Promise<{ message: string }> {
-    const token = await this.userTokenService.findByCode(code);
+    const token: UserToken | null =
+      await this.userTokenService.findByCode(code);
 
     if (!token) {
       throw new UnauthorizedException('Invalid verification code');
@@ -81,24 +101,36 @@ export class AuthService {
       throw new UnauthorizedException('Invalid token type');
     }
 
-    if (token.isExpired()) {
-      throw new UnauthorizedException('Verification code has expired');
-    }
-
-    if (token.isVerified()) {
-      throw new UnauthorizedException('Email already verified');
-    }
-
     if (token.isConsumed()) {
       throw new UnauthorizedException('Verification code already used');
     }
 
-    token.verify();
+    // If token is expired, resend a new verification code
+    if (token.isExpired()) {
+      const user = await this.userService.findById(token.userId);
+
+      // Delete the expired token
+      await this.userTokenService.delete(token.id!);
+
+      // Create a new verification token
+      const newVerificationCode = await this.createVerificationToken(user);
+
+      await this.sendVerificationEmail(user, newVerificationCode);
+
+      return {
+        message:
+          'Verification code has expired. A new verification code has been sent to your email.',
+      };
+    }
+
+    // Mark token as consumed
+    token.consume();
     await this.userTokenService.update({
       id: token.id!,
       userId: token.userId,
       tokenType: token.tokenType,
       code: token.code,
+      consumedAt: token.consumedAt as Date,
     });
 
     return { message: 'Email verified successfully' };

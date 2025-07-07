@@ -85,6 +85,10 @@ type AuthPayload {
   accessToken: String!
 }
 
+type VerifyEmailPayload {
+  message: String!
+}
+
 type Query {
   getAllAuthors(limit: Int! = 50, page: Int! = 0, sort: String! = "createdAt", searchTerm: String, order: SortOrder! = DESC): PaginatedAuthorsGQL!
   getAuthorById(id: ID!): AuthorGQL
@@ -122,6 +126,7 @@ type Mutation {
   patchUser(input: PatchUserInput!): UserGQL!
   deleteUser(id: Int!): UserGQL!
   register(input: RegisterInput!): AuthPayload!
+  verifyEmail(input: VerifyEmailInput!): VerifyEmailPayload!
 }
 
 input CreateAuthorInput {
@@ -219,4 +224,8 @@ input RegisterInput {
   password: String!
   firstname: String
   lastname: String
+}
+
+input VerifyEmailInput {
+  code: String!
 }
