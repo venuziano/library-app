@@ -26,7 +26,7 @@ services:
       HOST: ${HOST}
       USERNAME: ${DB_USER}
       DATABASE: ${DATABASE}
-      PASSWORD: ${DB_PASSWORD}
+      DB_PASSWORD: ${DB_PASSWORD}
       REDIS_URL: ${REDIS_URL}
       CACHE_TTL_L1: ${CACHE_TTL_L1}
       CACHE_TTL_L2: ${CACHE_TTL_L2}

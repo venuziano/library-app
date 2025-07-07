@@ -1,47 +1,78 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
+import { HttpStatus, INestApplication } from '@nestjs/common';
 import request from 'supertest';
-import { MailerModule } from '@nestjs-modules/mailer';
+import { GenericContainer, StartedTestContainer } from 'testcontainers';
 import { HealthModule } from './health.module';
+import { MailModule } from '../mail/mail.module';
+import { AppEnvConfigService } from '../config/environment-variables/app-env.config';
 
-describe('HealthController (e2e)', () => {
+describe('HealthController (e2e with real SMTP)', () => {
   let app: INestApplication;
+  let mailhog: StartedTestContainer;
 
   beforeAll(async () => {
+    // start MailHog in Docker
+    mailhog = await new GenericContainer('mailhog/mailhog')
+      .withExposedPorts(1025, 8025)
+      .start();
+
+    const smtpHost = mailhog.getHost();
+    const smtpPort = mailhog.getMappedPort(1025);
+
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [
-        MailerModule.forRoot({
-          transport: {
-            streamTransport: true,
-            newline: 'unix',
-            buffer: true,
-          },
-        }),
-        HealthModule,
+        MailModule, // uses AppEnvConfigService under the hood
+        HealthModule, // controller + indicator
       ],
-    }).compile();
+    })
+      .overrideProvider(AppEnvConfigService)
+      .useValue({
+        smtpMailHost: smtpHost,
+        smtpMailPort: smtpPort,
+        smtpMailSecure: false,
+        smtpMailUser: undefined,
+        smtpMailPassword: undefined,
+        smtpMailFrom: 'test@localhost',
+      })
+      .compile();
 
     app = moduleFixture.createNestApplication();
     await app.init();
-  });
+  }, 60_000);
 
   afterAll(async () => {
-    await app.close();
+    if (app) await app.close();
+    if (mailhog) await mailhog.stop();
   });
 
-  it('/health/ping (GET)', async () => {
-    await request(app.getHttpServer())
+  it('/health/ping (GET) should return 200', () =>
+    request(app.getHttpServer())
       .get('/health/ping')
       .expect(200)
-      .expect({ status: 'ok' });
-  });
+      .expect({ status: 'ok' }));
 
-  it('/health/mail (GET)', async () => {
+  it('/health/mail (GET) should report smtp up', async () => {
     const res = await request(app.getHttpServer())
       .get('/health/mail')
       .expect(200);
 
     expect(res.body.status).toBe('ok');
     expect(res.body.details.mail.status).toBe('up');
+  });
+
+  it('/health/mail (GET) after MailHog stops should report smtp down', async () => {
+    // stop MailHog so no SMTP listener remains
+    await mailhog.stop();
+
+    // small delay to ensure Docker has torn down the listener
+    await new Promise((r) => setTimeout(r, 100));
+
+    const res = await request(app.getHttpServer())
+      .get('/health/mail')
+      .expect(HttpStatus.SERVICE_UNAVAILABLE);
+
+    expect(res.body.status).toBe('error');
+    expect(res.body.details.mail.status).toBe('down');
+    expect(res.body.details.mail.error).toMatch(/ECONNREFUSED/);
   });
 });

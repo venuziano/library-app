@@ -34,7 +34,7 @@ export class AppEnvConfigService {
   }
 
   get dbPassword(): string {
-    return this.configService.getOrThrow<string>('PASSWORD');
+    return this.configService.getOrThrow<string>('DB_PASSWORD');
   }
 
   get redisURL(): string {
