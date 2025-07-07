@@ -1,0 +1,17 @@
+HELO:<[127.0.0.1]>
+FROM:<no-reply@yourapp.com>
+TO:<emailtest21312222@asd.com>
+
+From: No Reply <no-reply@yourapp.com>
+To: emailtest21312222@asd.com
+Subject: Confirm your email
+Message-ID: <f954fda0-8a59-7a01-4a8f-31706f236130@yourapp.com>
+Content-Transfer-Encoding: quoted-printable
+Date: Mon, 07 Jul 2025 14:43:00 +0000
+MIME-Version: 1.0
+Content-Type: text/html; charset=utf-8
+
+<html><head></head><body><h1>Hello user1name2212132</h1>
+<p>Click <a href=3D"https://yourapp.com/verify?code=3D6e22be445671605606475=
+73388b3f883a3a22ca5c495aad29f82cf74f60f7cb8">here</a> to verify your =
+account.</p></body></html>

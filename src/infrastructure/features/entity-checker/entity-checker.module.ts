@@ -46,4 +46,4 @@ import { USER_TOKEN_REPOSITORY_TOKEN } from 'src/domain/user-token/user-token.re
     EntityChecker,
   ],
 })
-export class SharedModule {}
+export class EntityCheckerModule {}

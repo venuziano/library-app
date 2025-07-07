@@ -133,6 +133,7 @@ export class AuthService {
       consumedAt: token.consumedAt as Date,
     });
 
+    // send welcome message/account verified
     return { message: 'Email verified successfully' };
   }
 

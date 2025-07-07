@@ -26,8 +26,8 @@ export function getTemplateDir(): string {
       inject: [AppEnvConfigService],
       useFactory: (config: AppEnvConfigService) => ({
         transport: {
-          host: config.smtpMailHost, // from your .env via AppEnvConfigService
-          port: config.smtpMailPort, // numeric
+          host: config.smtpMailHost,
+          port: config.smtpMailPort,
           secure: config.smtpMailSecure ?? false, // optional TLS toggle
           auth: config.smtpMailUser
             ? {
