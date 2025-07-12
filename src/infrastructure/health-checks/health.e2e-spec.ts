@@ -4,6 +4,7 @@ import request from 'supertest';
 import { GenericContainer, StartedTestContainer } from 'testcontainers';
 import { HealthModule } from './health.module';
 import { MailModule } from '../mail/mail.module';
+import { QueueModule } from '../queue/queue.module';
 import { AppEnvConfigService } from '../config/environment-variables/app-env.config';
 
 describe('HealthController (e2e with real SMTP)', () => {
@@ -22,6 +23,7 @@ describe('HealthController (e2e with real SMTP)', () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [
         MailModule, // uses AppEnvConfigService under the hood
+        QueueModule, // provide Bull queue for BullHealthIndicator
         HealthModule, // controller + indicator
       ],
     })
