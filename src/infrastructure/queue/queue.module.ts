@@ -1,15 +1,13 @@
 import { Global, Module } from '@nestjs/common';
 import { BullModule } from '@nestjs/bull';
 
-import {
-  EmailGateway,
-  MAIL_PROCESS_TOKEN,
-} from 'src/domain/interfaces/email.gateway';
+import { EmailGateway } from 'src/domain/interfaces/email.gateway';
 import { MailProcessor } from '../mail/mail-processor';
 import { MailModule } from '../mail/mail.module';
 import { MailQueueService } from '../mail/mail-queue.service';
 import { AppConfigModule } from '../config/app-config.module';
 import { AppEnvConfigService } from '../config/environment-variables/app-env.config';
+import { MAIL_PROCESS_TOKEN } from 'src/application/jobs/email-jobs';
 
 @Global()
 @Module({

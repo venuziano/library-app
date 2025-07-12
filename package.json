@@ -47,6 +47,8 @@
     "class-validator": "^0.14.1",
     "dataloader": "^2.2.3",
     "dotenv": "^16.5.0",
+    "express-basic-auth": "^1.2.1",
+    "express-rate-limit": "^7.5.1",
     "graphql": "^16.11.0",
     "graphql-tools": "^9.0.18",
     "handlebars": "^4.7.8",

@@ -41,6 +41,14 @@ export class AppEnvConfigService {
     return this.configService.getOrThrow<string>('REDIS_URL');
   }
 
+  get bullUser(): string {
+    return this.configService.getOrThrow<string>('BB_USER');
+  }
+
+  get bullPassword(): string {
+    return this.configService.getOrThrow<string>('BB_PASS');
+  }
+
   get redisHost(): string {
     return this.configService.getOrThrow<string>('REDIS_HOST');
   }

@@ -28,6 +28,8 @@ import { AppEnvConfigService } from './environment-variables/app-env.config';
         JWT_SECRET: Joi.string().required(),
         MAIL_HOST: Joi.string().required(),
         MAIL_PORT: Joi.number().required(),
+        BB_USER: Joi.string().required(),
+        BB_PASS: Joi.string().required(),
         MAIL_SECURE: Joi.boolean().required(),
         MAIL_USER: Joi.string().optional().allow(''),
         MAIL_PASSWORD: Joi.string().optional().allow(''),

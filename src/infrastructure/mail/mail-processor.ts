@@ -6,34 +6,28 @@ import {
   MAIL_PROCESS_TOKEN,
   SEND_VERIFICATION_PROCESS_TOKEN,
   SEND_WELCOME_PROCESS_TOKEN,
-} from 'src/domain/interfaces/email.gateway';
+  VerificationJobData,
+  WelcomeJobData,
+} from 'src/application/jobs/email-jobs';
 
 @Processor(MAIL_PROCESS_TOKEN)
 export class MailProcessor {
   constructor(private readonly emailService: MailService) {}
 
   @Process(SEND_VERIFICATION_PROCESS_TOKEN)
-  async handleVerification(
-    job: Job<{ to: string; username: string; code: string }>,
-  ) {
+  async handleVerification(job: Job<VerificationJobData>) {
     const { to, username, code } = job.data;
     return this.emailService.sendVerificationEmail(to, username, code);
   }
 
   @Process(SEND_WELCOME_PROCESS_TOKEN)
-  async handleWelcome(job: Job<{ to: string; username: string }>) {
+  async handleWelcome(job: Job<WelcomeJobData>) {
     const { to, username } = job.data;
     return this.emailService.sendWelcomeEmail(to, username);
   }
 
   @OnQueueFailed()
   onFailed(job: Job, err: Error) {
-    if (job.attemptsMade === job.opts.attempts) {
-      console.error(
-        `✉️ Permanently failed ${job.name} to ${job.data.to}:`,
-        err,
-      );
-      // e.g. alert ops here
-    }
+    console.error(`✉️ Permanently failed ${job.name} to ${job.data.to}:`, err);
   }
 }

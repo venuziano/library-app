@@ -13,6 +13,7 @@ import { JwtPayload } from 'src/domain/auth/jwt-payload.interface';
 import { User } from 'src/domain/user/user.entity';
 import { TokenType } from 'src/domain/user-token/token-type.enum';
 import { EmailGateway } from 'src/domain/interfaces/email.gateway';
+import { EmailDeliveryFailedError } from 'src/domain/mail/mail-error';
 
 @Injectable()
 export class AuthService {
@@ -47,11 +48,15 @@ export class AuthService {
     user: User,
     verificationCode: string,
   ): Promise<void> {
-    await this.emailGateway.enqueueVerification(
-      user.email,
-      user.username,
-      verificationCode,
-    );
+    try {
+      await this.emailGateway.enqueueVerification(
+        user.email,
+        user.username,
+        verificationCode,
+      );
+    } catch (err: any) {
+      throw new EmailDeliveryFailedError('welcome', user.email, err.message);
+    }
   }
 
   async signUp(registerDto: RegisterDto): Promise<{ accessToken: string }> {
@@ -124,17 +129,22 @@ export class AuthService {
     }
 
     // Mark token as consumed
-    token.consume();
-    await this.userTokenService.update({
-      id: token.id!,
-      userId: token.userId,
-      tokenType: token.tokenType,
-      code: token.code,
-      consumedAt: token.consumedAt as Date,
-    });
+    // token.consume();
+    // await this.userTokenService.update({
+    //   id: token.id!,
+    //   userId: token.userId,
+    //   tokenType: token.tokenType,
+    //   code: token.code,
+    //   consumedAt: token.consumedAt as Date,
+    // });
 
     // send welcome message/account verified
-    await this.emailGateway.enqueueWelcome(user.email, user.username);
+
+    try {
+      await this.emailGateway.enqueueWelcome(user.email, user.username);
+    } catch (err: any) {
+      throw new EmailDeliveryFailedError('welcome', user.email, err.message);
+    }
 
     return { message: 'Email verified successfully' };
   }

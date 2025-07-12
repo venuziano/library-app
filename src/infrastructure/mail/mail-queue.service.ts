@@ -2,12 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 
+import { EmailGateway } from 'src/domain/interfaces/email.gateway';
 import {
-  EmailGateway,
   MAIL_PROCESS_TOKEN,
   SEND_VERIFICATION_PROCESS_TOKEN,
   SEND_WELCOME_PROCESS_TOKEN,
-} from 'src/domain/interfaces/email.gateway';
+} from 'src/application/jobs/email-jobs';
 
 @Injectable()
 export class MailQueueService implements EmailGateway {
