@@ -9,6 +9,8 @@ import { AppEnvConfigService } from 'src/infrastructure/config/environment-varia
 import { UserModule } from '../user/user.module';
 import { UserTokenModule } from '../user-token/user-token.module';
 import { MailModule } from 'src/infrastructure/mail/mail.module';
+import { UserRegistrationService } from 'src/application/auth/user-register.service';
+import { UserVerificationService } from 'src/application/auth/user-verification.service';
 
 @Module({
   imports: [
@@ -24,7 +26,13 @@ import { MailModule } from 'src/infrastructure/mail/mail.module';
     UserTokenModule,
     MailModule,
   ],
-  providers: [AuthService, BcryptPasswordHasher, AuthResolver],
+  providers: [
+    AuthService,
+    BcryptPasswordHasher,
+    AuthResolver,
+    UserRegistrationService,
+    UserVerificationService,
+  ],
   exports: [AuthService],
 })
 export class AuthModule {}

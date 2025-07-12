@@ -6,8 +6,8 @@ import {
   MAIL_PROCESS_TOKEN,
   SEND_VERIFICATION_PROCESS_TOKEN,
   SEND_WELCOME_PROCESS_TOKEN,
-  VerificationJobData,
-  WelcomeJobData,
+  IVerificationJobData,
+  IWelcomeJobData,
 } from 'src/application/jobs/email-jobs';
 
 @Processor(MAIL_PROCESS_TOKEN)
@@ -15,13 +15,13 @@ export class MailProcessor {
   constructor(private readonly emailService: MailService) {}
 
   @Process(SEND_VERIFICATION_PROCESS_TOKEN)
-  async handleVerification(job: Job<VerificationJobData>) {
+  async handleVerification(job: Job<IVerificationJobData>) {
     const { to, username, code } = job.data;
     return this.emailService.sendVerificationEmail(to, username, code);
   }
 
   @Process(SEND_WELCOME_PROCESS_TOKEN)
-  async handleWelcome(job: Job<WelcomeJobData>) {
+  async handleWelcome(job: Job<IWelcomeJobData>) {
     const { to, username } = job.data;
     return this.emailService.sendWelcomeEmail(to, username);
   }

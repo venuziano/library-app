@@ -1,10 +1,10 @@
-export interface VerificationJobData {
+export interface IVerificationJobData {
   to: string;
   username: string;
   code: string;
 }
 
-export interface WelcomeJobData {
+export interface IWelcomeJobData {
   to: string;
   username: string;
 }

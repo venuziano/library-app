@@ -1,4 +1,6 @@
 import { Injectable, Inject } from '@nestjs/common';
+import { randomBytes } from 'crypto';
+
 import { UserToken } from '../../domain/user-token/user-token.entity';
 import {
   USER_TOKEN_REPOSITORY_TOKEN,
@@ -16,6 +18,7 @@ import { TokenType } from '../../domain/user-token/token-type.enum';
 import { EntityManager } from 'typeorm';
 import { EntityChecker } from '../shared/entity-checker.service';
 import { userTokenNotFoundException } from './user-token-exceptions';
+import { User } from 'src/domain/user/user.entity';
 
 @Injectable()
 export class UserTokenService {
@@ -24,6 +27,25 @@ export class UserTokenService {
     private readonly userTokenRepository: UserTokenRepository,
     private readonly checker: EntityChecker,
   ) {}
+
+  async createToken(
+    user: User,
+    type: TokenType,
+    manager?: EntityManager,
+  ): Promise<string> {
+    const verificationCode: string = randomBytes(32).toString('hex');
+
+    await this.create(
+      {
+        userId: user.id!,
+        tokenType: type,
+        code: verificationCode,
+      },
+      manager,
+    );
+
+    return verificationCode;
+  }
 
   // async findAll(
   //   properties: PaginationDto,

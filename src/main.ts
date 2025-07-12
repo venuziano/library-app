@@ -8,7 +8,7 @@ import { createBullBoard } from '@bull-board/api';
 import { BullAdapter } from '@bull-board/api/bullAdapter';
 import basicAuth = require('express-basic-auth');
 import { INestApplication } from '@nestjs/common';
-import rateLimit from 'express-rate-limit';
+// import rateLimit from 'express-rate-limit';
 
 import { AppEnvConfigService } from './infrastructure/config/environment-variables/app-env.config';
 import { MAIL_PROCESS_TOKEN } from './application/jobs/email-jobs';
@@ -34,12 +34,12 @@ export function registerBullBoard(
   createBullBoard({ queues: adapters, serverAdapter });
   app.use(
     mountPath,
-    rateLimit({
-      windowMs: 200 * 60 * 1000, // 15 minutes
-      max: 5, // limit each IP to 50 requests per window
-      standardHeaders: true, // return rate limit info in `RateLimit-*` headers
-      legacyHeaders: false,
-    }),
+    // rateLimit({
+    //   windowMs: 200 * 60 * 1000, // 15 minutes
+    //   max: 5, // limit each IP to 50 requests per window
+    //   standardHeaders: true, // return rate limit info in `RateLimit-*` headers
+    //   legacyHeaders: false,
+    // }),
     basicAuth({
       users: { [env.bullUser]: env.bullPassword },
       challenge: true,

@@ -6,14 +6,20 @@ import { RegisterInput } from './types/register.input';
 import { LoginInput } from './types/login.input';
 import { VerifyEmailInput } from './types/verify-email.input';
 import { VerifyEmailPayload } from './types/verify-email-payload.gql';
+import { UserRegistrationService } from 'src/application/auth/user-register.service';
+import { UserVerificationService } from 'src/application/auth/user-verification.service';
 
 @Resolver()
 export class AuthResolver {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly registerService: UserRegistrationService,
+    private readonly verifyService: UserVerificationService,
+  ) {}
 
   @Mutation(() => AuthPayload)
   async register(@Args('input') input: RegisterInput): Promise<AuthPayload> {
-    const { accessToken } = await this.authService.signUp(input);
+    const { accessToken } = await this.registerService.signUp(input);
     return { accessToken };
   }
 
@@ -21,7 +27,7 @@ export class AuthResolver {
   async verifyEmail(
     @Args('input') input: VerifyEmailInput,
   ): Promise<VerifyEmailPayload> {
-    const result = await this.authService.verifyEmail(input.code);
+    const result = await this.verifyService.verifyEmail(input.code);
     return result;
   }
 
