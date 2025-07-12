@@ -8,6 +8,5 @@ import { BullHealthIndicator } from './bull-health.indicator';
   imports: [TerminusModule],
   controllers: [HealthController],
   providers: [CustomMailerHealthIndicator, BullHealthIndicator],
-  exports: [CustomMailerHealthIndicator, BullHealthIndicator],
 })
 export class HealthModule {}
