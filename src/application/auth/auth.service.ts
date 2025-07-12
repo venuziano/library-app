@@ -11,8 +11,9 @@ import { RegisterDto } from './dtos/register.dto';
 import { LoginDto } from './dtos/login.dto';
 import { JwtPayload } from 'src/domain/auth/jwt-payload.interface';
 import { User } from 'src/domain/user/user.entity';
-import { MailService } from '../mail/mail.service';
+import { MailService } from '../../infrastructure/mail/mail.service';
 import { TokenType } from 'src/domain/user-token/token-type.enum';
+import { EmailGateway } from 'src/domain/interfaces/email.gateway';
 
 @Injectable()
 export class AuthService {
@@ -23,6 +24,7 @@ export class AuthService {
     private readonly dataSource: DataSource,
     private readonly mailService: MailService,
     private readonly userTokenService: UserTokenService,
+    private readonly emailGateway: EmailGateway,
   ) {}
 
   private async createVerificationToken(
@@ -47,7 +49,7 @@ export class AuthService {
     user: User,
     verificationCode: string,
   ): Promise<void> {
-    await this.mailService.sendVerificationEmail(
+    await this.emailGateway.enqueueVerification(
       user.email,
       user.username,
       verificationCode,
@@ -105,10 +107,10 @@ export class AuthService {
       throw new UnauthorizedException('Verification code already used');
     }
 
+    const user = await this.userService.findById(token.userId);
+
     // If token is expired, resend a new verification code
     if (token.isExpired()) {
-      const user = await this.userService.findById(token.userId);
-
       // Delete the expired token
       await this.userTokenService.delete(token.id!);
 
@@ -134,6 +136,8 @@ export class AuthService {
     });
 
     // send welcome message/account verified
+    await this.emailGateway.enqueueWelcome(user.email, user.username);
+
     return { message: 'Email verified successfully' };
   }
 

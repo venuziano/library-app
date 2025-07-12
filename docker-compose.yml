@@ -27,7 +27,8 @@ services:
       USERNAME: ${DB_USER}
       DATABASE: ${DATABASE}
       DB_PASSWORD: ${DB_PASSWORD}
-      REDIS_URL: ${REDIS_URL}
+      REDIS_PORT: ${REDIS_PORT}
+      REDIS_HOST: ${REDIS_HOST}
       CACHE_TTL_L1: ${CACHE_TTL_L1}
       CACHE_TTL_L2: ${CACHE_TTL_L2}
 
@@ -47,6 +48,15 @@ services:
     image: mailhog/mailhog
     container_name: mailhog
     restart: unless-stopped
+    # Make Jim sabotage emails
+    # command: >
+    #   -invite-jim
+    #   -jim-accept=0         # never accept any connection
+    #   -jim-disconnect=1      # always disconnect immediately
+    #   -jim-linkspeed-affect=0 # disable rate-limiting
+    #   -jim-reject-sender=0   # disable MAIL FROM rejection
+    #   -jim-reject-recipient=0# disable RCPT TO rejection
+    #   -jim-reject-auth=0     # disable AUTH rejection
     environment:
       MH_STORAGE: maildir                  # switch from in-memory to maildir on disk :contentReference[oaicite:0]{index=0}
       MH_MAILDIR_PATH: /mailhog/data       # where on the container to store the maildir

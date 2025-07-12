@@ -5,7 +5,7 @@ import { join } from 'path';
 
 import { AppConfigModule } from '../config/app-config.module';
 import { AppEnvConfigService } from '../config/environment-variables/app-env.config';
-import { MailService } from 'src/application/mail/mail.service';
+import { MailService } from 'src/infrastructure/mail/mail.service';
 
 export function getTemplateDir(): string {
   const srcDir = join(

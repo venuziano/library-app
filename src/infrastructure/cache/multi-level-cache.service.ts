@@ -3,7 +3,7 @@ import NodeCache from 'node-cache';
 import { RedisCheckService } from './redis-cache.service';
 import { randomUUID } from 'crypto';
 
-import { ICacheService } from 'src/domain/cache/cache.interface';
+import { ICacheService } from 'src/domain/interfaces/cache.interface';
 import { AppEnvConfigService } from '../config/environment-variables/app-env.config';
 import { RedisClientType } from 'redis';
 

@@ -10,6 +10,7 @@ export class MailService {
     username: string,
     code: string,
   ): Promise<void> {
+    // throw new Error('🔬 Simulated email send failure');
     const confirmationUrl = `https://yourapp.com/verify?code=${code}`;
     await this.mailer.sendMail({
       to,
@@ -24,6 +25,7 @@ export class MailService {
   }
 
   async sendWelcomeEmail(to: string, username: string): Promise<void> {
+    // throw new Error('🔬 Simulated email send failure 1');
     await this.mailer.sendMail({
       to,
       subject: 'Welcome aboard!',
