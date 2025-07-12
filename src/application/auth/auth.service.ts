@@ -11,7 +11,6 @@ import { RegisterDto } from './dtos/register.dto';
 import { LoginDto } from './dtos/login.dto';
 import { JwtPayload } from 'src/domain/auth/jwt-payload.interface';
 import { User } from 'src/domain/user/user.entity';
-import { MailService } from '../../infrastructure/mail/mail.service';
 import { TokenType } from 'src/domain/user-token/token-type.enum';
 import { EmailGateway } from 'src/domain/interfaces/email.gateway';
 
@@ -22,7 +21,6 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly hasher: BcryptPasswordHasher,
     private readonly dataSource: DataSource,
-    private readonly mailService: MailService,
     private readonly userTokenService: UserTokenService,
     private readonly emailGateway: EmailGateway,
   ) {}

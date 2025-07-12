@@ -18,7 +18,9 @@ export class AuthResolver {
   }
 
   @Mutation(() => VerifyEmailPayload)
-  async verifyEmail(@Args('input') input: VerifyEmailInput): Promise<VerifyEmailPayload> {
+  async verifyEmail(
+    @Args('input') input: VerifyEmailInput,
+  ): Promise<VerifyEmailPayload> {
     const result = await this.authService.verifyEmail(input.code);
     return result;
   }
