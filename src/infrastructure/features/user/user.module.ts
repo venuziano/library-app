@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { MailModule } from 'src/infrastructure/mail/mail.module';
+
 import { UserOrm } from './typeorm/user.orm-entity';
 import { UserRepositoryImpl } from './typeorm/user.repository.impl';
 import { UserService } from 'src/application/user/user.service';
@@ -7,9 +9,10 @@ import { UserResolver } from './graphql/user.resolver';
 import { EntityChecker } from 'src/application/shared/entity-checker.service';
 import { USER_REPOSITORY_TOKEN } from 'src/domain/user/user.repository';
 import { BcryptPasswordHasher } from 'src/domain/auth/auth.entity';
+import { UserTokenModule } from '../user-token/user-token.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([UserOrm])],
+  imports: [TypeOrmModule.forFeature([UserOrm]), UserTokenModule, MailModule],
   providers: [
     UserService,
     BcryptPasswordHasher,

@@ -1,5 +1,6 @@
-import { EntityManager } from 'typeorm';
+import { DataSource } from 'typeorm';
 import { Injectable, Inject } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 
 import { User } from '../../domain/user/user.entity';
 import {
@@ -26,6 +27,10 @@ import {
 } from './user-exceptions';
 import { PatchUserDto } from './dtos/patch-user.dto';
 import { BcryptPasswordHasher } from 'src/domain/auth/auth.entity';
+import { TokenType } from 'src/domain/user-token/token-type.enum';
+import { JwtPayload } from 'src/domain/auth/jwt-payload.interface';
+import { UserTokenService } from '../user-token/user-token.service';
+import { EmailGateway } from 'src/domain/interfaces/email.gateway';
 
 @Injectable()
 export class UserService {
@@ -35,6 +40,10 @@ export class UserService {
     public readonly cache: MultiLevelCacheService,
     private readonly checker: EntityChecker,
     private readonly hasher: BcryptPasswordHasher,
+    private readonly userTokenService: UserTokenService,
+    private readonly emailGateway: EmailGateway,
+    private readonly jwtService: JwtService,
+    private readonly dataSource: DataSource,
   ) {}
 
   @Cacheable({ namespace: userCacheKey })
@@ -63,18 +72,49 @@ export class UserService {
   }
 
   @InvalidateCache({ namespace: userCacheKey })
-  async create(dto: CreateUserDto, manager?: EntityManager): Promise<User> {
+  async create(dto: CreateUserDto): Promise<User> {
     await this.checker.ensureUserEmailIsUnique(dto.email);
     await this.checker.ensureUsernameIsUnique(dto.username);
-    const hashed: string = await this.hasher.hash(dto.password);
-    const user: User = User.create({
-      username: dto.username,
-      password: hashed,
-      firstname: dto.firstname,
-      lastname: dto.lastname,
-      email: dto.email,
+
+    const result = await this.dataSource.transaction(async (manager) => {
+      const hashed: string = await this.hasher.hash(dto.password);
+
+      const newUser: User = User.create({
+        username: dto.username,
+        password: hashed,
+        firstname: dto.firstname,
+        lastname: dto.lastname,
+        email: dto.email,
+      });
+
+      const saved: User = await this.userRepository.create(newUser, manager);
+
+      // Generate verification token within transaction
+      const verificationCode: string = await this.userTokenService.createToken(
+        saved,
+        TokenType.EMAIL_VERIFICATION,
+        manager,
+      );
+
+      const payload: JwtPayload = {
+        sub: saved.id!.toString(),
+        username: saved.username,
+      };
+      const token = this.jwtService.sign(payload);
+
+      return { user: saved, token, verificationCode };
     });
-    return this.userRepository.create(user, manager);
+
+    const { user, verificationCode } = result;
+
+    // retry if fail to send email
+    await this.emailGateway.enqueueVerification(
+      user.email,
+      user.username,
+      verificationCode,
+    );
+
+    return user;
   }
 
   @InvalidateCache({

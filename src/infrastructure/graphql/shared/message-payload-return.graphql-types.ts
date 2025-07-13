@@ -1,7 +1,7 @@
 import { Field, ObjectType } from '@nestjs/graphql';
 
 @ObjectType()
-export class AuthPayload {
+export class MessageGQL {
   @Field()
-  accessToken: string;
+  message: string;
 }

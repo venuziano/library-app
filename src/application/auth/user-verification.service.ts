@@ -5,6 +5,7 @@ import { UserTokenService } from '../user-token/user-token.service';
 import { EmailGateway } from 'src/domain/interfaces/email.gateway';
 import { TokenType } from 'src/domain/user-token/token-type.enum';
 import { UserToken } from 'src/domain/user-token/user-token.entity';
+import { MessageDto } from '../shared/dtos/message.dto';
 
 @Injectable()
 export class UserVerificationService {
@@ -14,7 +15,7 @@ export class UserVerificationService {
     private readonly emailGateway: EmailGateway,
   ) {}
 
-  async verifyEmail(code: string): Promise<{ message: string }> {
+  async verifyEmail(code: string): Promise<MessageDto> {
     const token: UserToken | null =
       await this.userTokenService.findByCode(code);
 

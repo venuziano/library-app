@@ -1,13 +1,13 @@
 import { Resolver, Mutation, Args } from '@nestjs/graphql';
 
 import { AuthService } from 'src/application/auth/auth.service';
-import { AuthPayload } from './types/auth-payload.gql';
 import { RegisterInput } from './types/register.input';
 import { LoginInput } from './types/login.input';
 import { VerifyEmailInput } from './types/verify-email.input';
 import { VerifyEmailPayload } from './types/verify-email-payload.gql';
 import { UserRegistrationService } from 'src/application/auth/user-register.service';
 import { UserVerificationService } from 'src/application/auth/user-verification.service';
+import { MessageGQL } from 'src/infrastructure/graphql/shared/message-payload-return.graphql-types';
 
 @Resolver()
 export class AuthResolver {
@@ -17,10 +17,10 @@ export class AuthResolver {
     private readonly verifyService: UserVerificationService,
   ) {}
 
-  @Mutation(() => AuthPayload)
-  async register(@Args('input') input: RegisterInput): Promise<AuthPayload> {
-    const { accessToken } = await this.registerService.signUp(input);
-    return { accessToken };
+  @Mutation(() => MessageGQL)
+  async register(@Args('input') input: RegisterInput): Promise<MessageGQL> {
+    const { message } = await this.registerService.signUp(input);
+    return { message };
   }
 
   @Mutation(() => VerifyEmailPayload)

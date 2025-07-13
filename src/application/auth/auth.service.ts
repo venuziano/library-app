@@ -17,14 +17,7 @@ import { EmailDeliveryFailedError } from 'src/domain/mail/mail-error';
 
 @Injectable()
 export class AuthService {
-  constructor(
-    private readonly userService: UserService,
-    private readonly jwtService: JwtService,
-    private readonly hasher: BcryptPasswordHasher,
-    private readonly dataSource: DataSource,
-    private readonly userTokenService: UserTokenService,
-    private readonly emailGateway: EmailGateway,
-  ) {}
+  constructor() {} // private readonly emailGateway: EmailGateway, // private readonly userTokenService: UserTokenService, // private readonly dataSource: DataSource, // private readonly hasher: BcryptPasswordHasher, // private readonly jwtService: JwtService, // private readonly userService: UserService,
 
   // async signIn(loginDto: LoginDto): Promise<{ accessToken: string }> {
   //   const user = await this.userService.findByEmail(loginDto.email);
