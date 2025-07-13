@@ -4,7 +4,6 @@ import { AuthService } from 'src/application/auth/auth.service';
 import { RegisterInput } from './types/register.input';
 import { LoginInput } from './types/login.input';
 import { VerifyEmailInput } from './types/verify-email.input';
-import { VerifyEmailPayload } from './types/verify-email-payload.gql';
 import { UserRegistrationService } from 'src/application/auth/user-register.service';
 import { UserVerificationService } from 'src/application/auth/user-verification.service';
 import { MessageGQL } from 'src/infrastructure/graphql/shared/message-payload-return.graphql-types';
@@ -23,10 +22,10 @@ export class AuthResolver {
     return { message };
   }
 
-  @Mutation(() => VerifyEmailPayload)
+  @Mutation(() => MessageGQL)
   async verifyEmail(
     @Args('input') input: VerifyEmailInput,
-  ): Promise<VerifyEmailPayload> {
+  ): Promise<MessageGQL> {
     const result = await this.verifyService.verifyEmail(input.code);
     return result;
   }

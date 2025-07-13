@@ -14,6 +14,7 @@ import { MailModule } from './infrastructure/mail/mail.module';
 import { HealthModule } from './infrastructure/health-checks/health.module';
 import { GraphqlConfigModule } from './infrastructure/graphql/graphql.module';
 import { QueueModule } from './infrastructure/queue/queue.module';
+import { EventModule } from './infrastructure/event/event.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { QueueModule } from './infrastructure/queue/queue.module';
     MailModule,
     HealthModule,
     QueueModule,
+    EventModule,
 
     // Transport
     GraphqlConfigModule,

@@ -1,6 +1,7 @@
 import { DataSource } from 'typeorm';
 import { Injectable, Inject } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { EventBus } from '@nestjs/cqrs';
 
 import { User } from '../../domain/user/user.entity';
 import {
@@ -30,7 +31,7 @@ import { BcryptPasswordHasher } from 'src/domain/auth/auth.entity';
 import { TokenType } from 'src/domain/user-token/token-type.enum';
 import { JwtPayload } from 'src/domain/auth/jwt-payload.interface';
 import { UserTokenService } from '../user-token/user-token.service';
-import { EmailGateway } from 'src/domain/interfaces/email.gateway';
+import { UserRegistered } from 'src/domain/events/user/user-registered.event';
 
 @Injectable()
 export class UserService {
@@ -41,9 +42,9 @@ export class UserService {
     private readonly checker: EntityChecker,
     private readonly hasher: BcryptPasswordHasher,
     private readonly userTokenService: UserTokenService,
-    private readonly emailGateway: EmailGateway,
     private readonly jwtService: JwtService,
     private readonly dataSource: DataSource,
+    private readonly eventBus: EventBus,
   ) {}
 
   @Cacheable({ namespace: userCacheKey })
@@ -107,11 +108,9 @@ export class UserService {
 
     const { user, verificationCode } = result;
 
-    // retry if fail to send email
-    await this.emailGateway.enqueueVerification(
-      user.email,
-      user.username,
-      verificationCode,
+    // emit event to send verification email
+    this.eventBus.publish(
+      new UserRegistered(user.id!, user.email, user.username, verificationCode),
     );
 
     return user;

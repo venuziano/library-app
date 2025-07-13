@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { MailModule } from 'src/infrastructure/mail/mail.module';
 
 import { UserOrm } from './typeorm/user.orm-entity';
 import { UserRepositoryImpl } from './typeorm/user.repository.impl';
@@ -12,7 +11,7 @@ import { BcryptPasswordHasher } from 'src/domain/auth/auth.entity';
 import { UserTokenModule } from '../user-token/user-token.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([UserOrm]), UserTokenModule, MailModule],
+  imports: [TypeOrmModule.forFeature([UserOrm]), UserTokenModule],
   providers: [
     UserService,
     BcryptPasswordHasher,

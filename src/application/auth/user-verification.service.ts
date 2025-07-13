@@ -1,18 +1,20 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { EventBus } from '@nestjs/cqrs';
 
 import { UserService } from '../user/user.service';
 import { UserTokenService } from '../user-token/user-token.service';
-import { EmailGateway } from 'src/domain/interfaces/email.gateway';
 import { TokenType } from 'src/domain/user-token/token-type.enum';
 import { UserToken } from 'src/domain/user-token/user-token.entity';
 import { MessageDto } from '../shared/dtos/message.dto';
+import { UserEmailVerified } from 'src/domain/events/user/user-verified.event';
+import { UserRegistered } from 'src/domain/events/user/user-registered.event';
 
 @Injectable()
 export class UserVerificationService {
   constructor(
     private readonly userService: UserService,
     private readonly userTokenService: UserTokenService,
-    private readonly emailGateway: EmailGateway,
+    private readonly eventBus: EventBus,
   ) {}
 
   async verifyEmail(code: string): Promise<MessageDto> {
@@ -44,10 +46,14 @@ export class UserVerificationService {
         TokenType.EMAIL_VERIFICATION,
       );
 
-      await this.emailGateway.enqueueVerification(
-        user.email,
-        user.username,
-        newVerificationCode,
+      // emit event to send verification email if old expired
+      this.eventBus.publish(
+        new UserRegistered(
+          user.id!,
+          user.email,
+          user.username,
+          newVerificationCode,
+        ),
       );
 
       return {
@@ -67,7 +73,9 @@ export class UserVerificationService {
     });
 
     // send welcome message/account verified
-    await this.emailGateway.enqueueWelcome(user.email, user.username);
+    this.eventBus.publish(
+      new UserEmailVerified(user.id!, user.email, user.username),
+    );
 
     return { message: 'Email verified successfully' };
   }

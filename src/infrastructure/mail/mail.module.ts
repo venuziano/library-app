@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { join } from 'path';
@@ -6,6 +6,7 @@ import { join } from 'path';
 import { AppConfigModule } from '../config/app-config.module';
 import { AppEnvConfigService } from '../config/environment-variables/app-env.config';
 import { MailService } from 'src/infrastructure/mail/mail.service';
+import { MailQueueService } from './mail-queue.service';
 
 export function getTemplateDir(): string {
   const srcDir = join(
@@ -19,6 +20,7 @@ export function getTemplateDir(): string {
   return process.env.NODE_ENV === 'production' ? distDir : srcDir;
 }
 
+@Global()
 @Module({
   imports: [
     MailerModule.forRootAsync({
@@ -48,7 +50,7 @@ export function getTemplateDir(): string {
       }),
     }),
   ],
-  providers: [MailService],
-  exports: [MailService],
+  providers: [MailService, MailQueueService],
+  exports: [MailService, MailQueueService],
 })
 export class MailModule {}

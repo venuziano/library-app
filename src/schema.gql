@@ -81,10 +81,6 @@ type PaginatedUsersGQL {
   pageInfo: PageInfoGQL!
 }
 
-type VerifyEmailPayload {
-  message: String!
-}
-
 type MessageGQL {
   message: String!
 }
@@ -126,7 +122,7 @@ type Mutation {
   patchUser(input: PatchUserInput!): UserGQL!
   deleteUser(id: Int!): UserGQL!
   register(input: RegisterInput!): MessageGQL!
-  verifyEmail(input: VerifyEmailInput!): VerifyEmailPayload!
+  verifyEmail(input: VerifyEmailInput!): MessageGQL!
 }
 
 input CreateAuthorInput {
