@@ -73,7 +73,6 @@ export class UserService {
       firstname: dto.firstname,
       lastname: dto.lastname,
       email: dto.email,
-      stripeCustomerId: dto.stripeCustomerId,
     });
     return this.userRepository.create(user, manager);
   }
@@ -95,7 +94,6 @@ export class UserService {
       firstname: dto.firstname,
       lastname: dto.lastname,
       email: dto.email,
-      stripeCustomerId: dto.stripeCustomerId,
     });
     return this.userRepository.update(userToUpdate);
   }

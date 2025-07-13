@@ -1,29 +1,3 @@
-import { IsString, IsNotEmpty, IsEmail, IsOptional } from 'class-validator';
-import { Type } from 'class-transformer';
+import { BaseUserDto } from 'src/application/user/dtos/base-user.dto';
 
-export class RegisterDto {
-  @Type(() => String)
-  @IsString()
-  @IsNotEmpty()
-  username: string;
-
-  @Type(() => String)
-  @IsEmail()
-  @IsNotEmpty()
-  email: string;
-
-  @Type(() => String)
-  @IsString()
-  @IsNotEmpty()
-  password: string;
-
-  @Type(() => String)
-  @IsOptional()
-  @IsString()
-  firstname?: string;
-
-  @Type(() => String)
-  @IsOptional()
-  @IsString()
-  lastname?: string;
-}
+export class RegisterDto extends BaseUserDto {}

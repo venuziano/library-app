@@ -98,7 +98,6 @@ describe('UserService', () => {
         firstname: 'A',
         lastname: 'B',
         email: 'user1@example.com',
-        stripeCustomerId: 'cus_123',
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -129,7 +128,6 @@ describe('UserService', () => {
         firstname: 'A',
         lastname: 'B',
         email: 'user1@example.com',
-        stripeCustomerId: 'cus_123',
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -165,7 +163,6 @@ describe('UserService', () => {
         firstname: 'X',
         lastname: 'Y',
         email: 'user2@example.com',
-        stripeCustomerId: 'cus_456',
       };
       const created = User.create(dto);
       checker.ensureUserEmailIsUnique.mockResolvedValueOnce(undefined);
@@ -183,7 +180,6 @@ describe('UserService', () => {
           firstname: 'X',
           lastname: 'Y',
           email: 'user2@example.com',
-          stripeCustomerId: 'cus_456',
         }),
         undefined,
       );
@@ -198,7 +194,6 @@ describe('UserService', () => {
         firstname: 'Z',
         lastname: 'W',
         email: 'user3@example.com',
-        stripeCustomerId: 'cus_789',
       };
       const created = User.create(dto);
       const mockManager = {} as any;
@@ -217,7 +212,6 @@ describe('UserService', () => {
           firstname: 'Z',
           lastname: 'W',
           email: 'user3@example.com',
-          stripeCustomerId: 'cus_789',
         }),
         mockManager,
       );
@@ -231,7 +225,6 @@ describe('UserService', () => {
         firstname: 'X',
         lastname: 'Y',
         email: 'existing@example.com',
-        stripeCustomerId: 'cus_456',
       };
       const conflictError = new ConflictException(dto.email);
       checker.ensureUserEmailIsUnique.mockRejectedValueOnce(conflictError);
@@ -247,7 +240,6 @@ describe('UserService', () => {
         firstname: 'X',
         lastname: 'Y',
         email: 'existing@example.com',
-        stripeCustomerId: 'cus_456',
       };
       const conflictError = new ConflictException(dto.username);
       checker.ensureUsernameIsUnique.mockRejectedValueOnce(conflictError);
@@ -266,7 +258,6 @@ describe('UserService', () => {
         firstname: 'F',
         lastname: 'L',
         email: 'user3@example.com',
-        stripeCustomerId: 'cus_789',
       };
       const exception = userNotFoundException();
       checker.ensureUserExists.mockImplementationOnce(() => {
@@ -285,7 +276,6 @@ describe('UserService', () => {
         firstname: 'New',
         lastname: 'Name',
         email: 'newuser@example.com',
-        stripeCustomerId: 'cus_999',
       };
       const original = User.reconstitute({
         id: 5,
@@ -294,7 +284,6 @@ describe('UserService', () => {
         firstname: 'Old',
         lastname: 'Name',
         email: 'olduser@example.com',
-        stripeCustomerId: 'cus_888',
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -320,7 +309,6 @@ describe('UserService', () => {
           firstname: dto.firstname,
           lastname: dto.lastname,
           email: dto.email,
-          stripeCustomerId: dto.stripeCustomerId,
         }),
       );
 
@@ -329,7 +317,6 @@ describe('UserService', () => {
       expect(result!.firstname).toBe(dto.firstname);
       expect(result!.lastname).toBe(dto.lastname);
       expect(result!.email).toBe(dto.email);
-      expect(result!.stripeCustomerId).toBe(dto.stripeCustomerId);
       expect(result!.password).toBe('old-hash');
     });
 
@@ -341,7 +328,6 @@ describe('UserService', () => {
         firstname: 'New',
         lastname: 'Name',
         email: 'existing@example.com',
-        stripeCustomerId: 'cus_999',
       };
       const original = User.reconstitute({
         id: 5,
@@ -350,7 +336,6 @@ describe('UserService', () => {
         firstname: 'Old',
         lastname: 'Name',
         email: 'olduser@example.com',
-        stripeCustomerId: 'cus_888',
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -370,7 +355,6 @@ describe('UserService', () => {
         firstname: 'New',
         lastname: 'Name',
         email: 'existing@example.com',
-        stripeCustomerId: 'cus_999',
       };
       const original = User.reconstitute({
         id: 5,
@@ -379,7 +363,6 @@ describe('UserService', () => {
         firstname: 'Old',
         lastname: 'Name',
         email: 'olduser@example.com',
-        stripeCustomerId: 'cus_888',
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -412,7 +395,6 @@ describe('UserService', () => {
         firstname: 'OldFirst',
         lastname: 'Last',
         email: 'old@example.com',
-        stripeCustomerId: 'cus_patch',
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -436,7 +418,6 @@ describe('UserService', () => {
           firstname: original.firstname,
           lastname: original.lastname,
           email: dto.email,
-          stripeCustomerId: original.stripeCustomerId,
         }),
       );
 
@@ -454,7 +435,6 @@ describe('UserService', () => {
         firstname: 'OldFirst',
         lastname: 'Last',
         email: 'old@example.com',
-        stripeCustomerId: 'cus_patch',
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -475,7 +455,6 @@ describe('UserService', () => {
         firstname: 'OldFirst',
         lastname: 'Last',
         email: 'old@example.com',
-        stripeCustomerId: 'cus_patch',
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -508,7 +487,6 @@ describe('UserService', () => {
         firstname: 'A',
         lastname: 'B',
         email: 'deluser@example.com',
-        stripeCustomerId: 'cus_del',
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -530,7 +508,6 @@ describe('UserService', () => {
         firstname: 'A',
         lastname: 'B',
         email: 'deluser@example.com',
-        stripeCustomerId: 'cus_del',
         createdAt: new Date(),
         updatedAt: new Date(),
       });
