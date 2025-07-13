@@ -4,7 +4,6 @@ import { UserService } from '../user/user.service';
 import { UserTokenService } from '../user-token/user-token.service';
 import { EmailGateway } from 'src/domain/interfaces/email.gateway';
 import { TokenType } from 'src/domain/user-token/token-type.enum';
-import { EmailDeliveryFailedError } from 'src/domain/mail/mail-error';
 import { UserToken } from 'src/domain/user-token/user-token.entity';
 
 @Injectable()
@@ -44,16 +43,11 @@ export class UserVerificationService {
         TokenType.EMAIL_VERIFICATION,
       );
 
-      // await this.sendVerificationEmail(user, newVerificationCode);
-      try {
-        await this.emailGateway.enqueueVerification(
-          user.email,
-          user.username,
-          newVerificationCode,
-        );
-      } catch (err: any) {
-        throw new EmailDeliveryFailedError('welcome', user.email, err.message);
-      }
+      await this.emailGateway.enqueueVerification(
+        user.email,
+        user.username,
+        newVerificationCode,
+      );
 
       return {
         message:
@@ -72,11 +66,7 @@ export class UserVerificationService {
     });
 
     // send welcome message/account verified
-    try {
-      await this.emailGateway.enqueueWelcome(user.email, user.username);
-    } catch (err: any) {
-      throw new EmailDeliveryFailedError('welcome', user.email, err.message);
-    }
+    await this.emailGateway.enqueueWelcome(user.email, user.username);
 
     return { message: 'Email verified successfully' };
   }

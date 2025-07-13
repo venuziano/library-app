@@ -54,19 +54,11 @@ export class UserRegistrationService {
     });
 
     // retry if fail to send email
-    try {
-      await this.emailGateway.enqueueVerification(
-        result.user.email,
-        result.user.username,
-        result.verificationCode,
-      );
-    } catch (err: any) {
-      throw new EmailDeliveryFailedError(
-        'welcome',
-        result.user.email,
-        err.message,
-      );
-    }
+    await this.emailGateway.enqueueVerification(
+      result.user.email,
+      result.user.username,
+      result.verificationCode,
+    );
 
     return { accessToken: result.token };
   }
