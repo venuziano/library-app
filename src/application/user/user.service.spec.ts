@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/require-await */
 /* eslint-disable @typescript-eslint/only-throw-error */
 /* eslint-disable @typescript-eslint/unbound-method */
 
@@ -18,6 +19,11 @@ import {
 } from './user-exceptions';
 import { ConflictException } from '@nestjs/common';
 import { BcryptPasswordHasher } from 'src/domain/auth/auth.entity';
+import { UserTokenService } from '../user-token/user-token.service';
+import { JwtService } from '@nestjs/jwt';
+import { DataSource } from 'typeorm';
+import { EventBus } from '@nestjs/cqrs';
+import { UserRegistered } from 'src/domain/events/user/user-registered.event';
 
 describe('UserService', () => {
   let service: UserService;
@@ -25,6 +31,10 @@ describe('UserService', () => {
   let cache: jest.Mocked<MultiLevelCacheService>;
   let checker: jest.Mocked<EntityChecker>;
   let hasher: jest.Mocked<BcryptPasswordHasher>;
+  let userTokenService: jest.Mocked<UserTokenService>;
+  let jwtService: jest.Mocked<JwtService>;
+  let dataSource: jest.Mocked<DataSource>;
+  let eventBus: jest.Mocked<EventBus>;
 
   beforeEach(() => {
     repo = {
@@ -48,12 +58,32 @@ describe('UserService', () => {
       ensureUserEmailIsUnique: jest.fn(),
       ensureUsernameIsUnique: jest.fn(),
     } as any;
-
     hasher = {
       hash: jest.fn(),
     } as any;
+    userTokenService = {
+      createToken: jest.fn(),
+    } as any;
+    jwtService = {
+      sign: jest.fn(),
+    } as any;
+    dataSource = {
+      transaction: jest.fn(),
+    } as any;
+    eventBus = {
+      publish: jest.fn(),
+    } as any;
 
-    service = new UserService(repo, cache, checker, hasher);
+    service = new UserService(
+      repo,
+      cache,
+      checker,
+      hasher,
+      userTokenService,
+      jwtService,
+      dataSource,
+      eventBus,
+    );
   });
 
   describe('findAll', () => {
@@ -155,68 +185,87 @@ describe('UserService', () => {
   });
 
   describe('create', () => {
-    it('creates a new user after ensuring email is unique and returns it', async () => {
-      const hashedPassword = 'hashed-password';
+    it('creates a new user and emits the registration event', async () => {
       const dto: CreateUserDto = {
         username: 'user2',
-        password: hashedPassword,
+        password: 'plain-pw',
         firstname: 'X',
         lastname: 'Y',
         email: 'user2@example.com',
       };
-      const created = User.create(dto);
-      checker.ensureUserEmailIsUnique.mockResolvedValueOnce(undefined);
-      checker.ensureUsernameIsUnique.mockResolvedValueOnce(undefined);
-      hasher.hash.mockResolvedValueOnce(hashedPassword);
-      repo.create.mockResolvedValue(created);
+      const hashed = 'hashed-pw';
+      const savedUser = User.reconstitute({
+        id: 42,
+        username: dto.username,
+        password: hashed,
+        firstname: dto.firstname!,
+        lastname: dto.lastname!,
+        email: dto.email,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+      const code = 'verif-code';
+
+      checker.ensureUserEmailIsUnique.mockResolvedValue(undefined);
+      checker.ensureUsernameIsUnique.mockResolvedValue(undefined);
+      hasher.hash.mockResolvedValue(hashed);
+      repo.create.mockResolvedValue(savedUser);
+      userTokenService.createToken.mockResolvedValue(code);
+      jwtService.sign.mockReturnValue('jwt-token');
+
+      // Cast to any so we can invoke the callback without TS errors
+      (dataSource.transaction as any).mockImplementation(async (cb: any) => {
+        return cb({} as any);
+      });
 
       const result = await service.create(dto);
 
       expect(checker.ensureUserEmailIsUnique).toHaveBeenCalledWith(dto.email);
       expect(repo.create).toHaveBeenCalledWith(
         expect.objectContaining({
-          username: 'user2',
-          password: hashedPassword,
-          firstname: 'X',
-          lastname: 'Y',
-          email: 'user2@example.com',
+          username: dto.username,
+          password: hashed,
+          firstname: dto.firstname,
+          lastname: dto.lastname,
+          email: dto.email,
         }),
-        undefined,
+        expect.anything(),
       );
-      expect(result).toBe(created);
-    });
-
-    it('creates a new user with manager parameter', async () => {
-      const hashedPassword = 'hashed-password';
-      const dto: CreateUserDto = {
-        username: 'user3',
-        password: hashedPassword,
-        firstname: 'Z',
-        lastname: 'W',
-        email: 'user3@example.com',
-      };
-      const created = User.create(dto);
-      const mockManager = {} as any;
-      checker.ensureUserEmailIsUnique.mockResolvedValueOnce(undefined);
-      checker.ensureUsernameIsUnique.mockResolvedValueOnce(undefined);
-      hasher.hash.mockResolvedValueOnce(hashedPassword);
-      repo.create.mockResolvedValue(created);
-
-      const result = await service.create(dto, mockManager);
-
-      expect(checker.ensureUserEmailIsUnique).toHaveBeenCalledWith(dto.email);
-      expect(repo.create).toHaveBeenCalledWith(
-        expect.objectContaining({
-          username: 'user3',
-          password: hashedPassword,
-          firstname: 'Z',
-          lastname: 'W',
-          email: 'user3@example.com',
-        }),
-        mockManager,
+      expect(eventBus.publish).toHaveBeenCalledWith(
+        new UserRegistered(42, dto.email, dto.username, code),
       );
-      expect(result).toBe(created);
+      expect(result).toBe(savedUser);
     });
+    // it('creates a new user after ensuring email is unique and returns it', async () => {
+    //   const hashedPassword = 'hashed-password';
+    //   const dto: CreateUserDto = {
+    //     username: 'user2',
+    //     password: hashedPassword,
+    //     firstname: 'X',
+    //     lastname: 'Y',
+    //     email: 'user2@example.com',
+    //   };
+    //   const created = User.create(dto);
+    //   checker.ensureUserEmailIsUnique.mockResolvedValueOnce(undefined);
+    //   checker.ensureUsernameIsUnique.mockResolvedValueOnce(undefined);
+    //   hasher.hash.mockResolvedValueOnce(hashedPassword);
+    //   repo.create.mockResolvedValue(created);
+
+    //   const result = await service.create(dto);
+
+    //   expect(checker.ensureUserEmailIsUnique).toHaveBeenCalledWith(dto.email);
+    //   expect(repo.create).toHaveBeenCalledWith(
+    //     expect.objectContaining({
+    //       username: 'user2',
+    //       password: hashedPassword,
+    //       firstname: 'X',
+    //       lastname: 'Y',
+    //       email: 'user2@example.com',
+    //     }),
+    //     undefined,
+    //   );
+    //   expect(result).toBe(created);
+    // });
 
     it('throws ConflictException when email is already in use', async () => {
       const dto: CreateUserDto = {
