@@ -1,0 +1,40 @@
+# AWS Configuration
+aws_region = "us-east-1"
+
+# Project Configuration
+project_name = "library-app"
+environment  = "development"
+
+# VPC Configuration
+vpc_cidr = "10.0.0.0/16"
+availability_zones = ["us-east-1a", "us-east-1b"]
+public_subnets     = ["10.0.1.0/24", "10.0.2.0/24"]
+private_subnets    = ["10.0.11.0/24", "10.0.12.0/24"]
+
+# Security Configuration
+allowed_ssh_cidr = ["0.0.0.0/0"]
+
+# RDS Configuration
+db_instance_class        = "db.t3.micro"
+db_allocated_storage     = 20
+db_max_allocated_storage = 100
+db_name                  = "library_app"
+db_username              = "postgres"
+db_password              = "your-secure-password-here"
+db_backup_retention_period = 7
+
+# ElastiCache Configuration
+cache_node_type = "cache.t3.micro"
+
+# Application Configuration
+app_cpu          = 256
+app_memory       = 512
+app_desired_count = 1
+ecr_repository_url = "123456789012.dkr.ecr.us-east-1.amazonaws.com/library-app"
+
+# Cache Configuration
+cache_ttl_l1 = 300
+cache_ttl_l2 = 3600
+
+# SES Configuration
+ses_domain = "yourdomain.com" 

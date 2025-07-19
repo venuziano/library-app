@@ -24,7 +24,7 @@ services:
       PG_TYPE: ${PG_TYPE}
       PG_PORT: ${PG_PORT}
       HOST: ${HOST}
-      USERNAME: ${DB_USER}
+      DB_USER: ${DB_USER}
       DATABASE: ${DATABASE}
       DB_PASSWORD: ${DB_PASSWORD}
       REDIS_PORT: ${REDIS_PORT}

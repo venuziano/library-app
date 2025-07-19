@@ -15,7 +15,7 @@ import { AppEnvConfigService } from './environment-variables/app-env.config';
         PG_TYPE: Joi.string().required(),
         HOST: Joi.string().required(),
         PG_PORT: Joi.number().required(),
-        USERNAME: Joi.string().required(),
+        DB_USER: Joi.string().required(),
         DB_PASSWORD: Joi.string().required(),
         DATABASE: Joi.string().required(),
         REDIS_HOST: Joi.string().required(),

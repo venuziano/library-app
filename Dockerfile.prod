@@ -1,0 +1,34 @@
+# Stage 1: dependencies + build
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+# only copy manifest first to leverage layer caching
+COPY package*.json ./
+
+# install only production deps (no dev dependencies)
+RUN npm ci
+
+# copy the rest of the source, then build (if you have a build step)
+COPY . .
+
+RUN npm run build && npm prune --production
+
+# Stage 2: runtime image
+FROM node:20-alpine AS runtime
+
+WORKDIR /app
+
+# set production mode
+ENV NODE_ENV=production
+
+# copy just what’s needed from builder
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/dist ./dist
+
+EXPOSE 3010
+
+# use your production start command
+# CMD ["npm","run","start"]
+CMD ["node", "dist/main.js"]

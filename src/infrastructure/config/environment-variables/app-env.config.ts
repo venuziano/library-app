@@ -26,7 +26,7 @@ export class AppEnvConfigService {
   }
 
   get dbUsername(): string {
-    return this.configService.getOrThrow<string>('USERNAME');
+    return this.configService.getOrThrow<string>('DB_USER');
   }
 
   get dbName(): string {
