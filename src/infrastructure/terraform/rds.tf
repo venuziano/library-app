@@ -34,7 +34,7 @@ resource "aws_db_subnet_group" "main" {
 
 # RDS Parameter Group
 resource "aws_db_parameter_group" "main" {
-  family = "postgres13"
+  family = "postgres17"
   name   = "${var.project_name}-db-parameter-group"
 
   parameter {
@@ -58,8 +58,12 @@ resource "aws_db_instance" "main" {
 
   # Engine configuration
   engine         = "postgres"
-  engine_version = "13.12"
   instance_class = var.db_instance_class
+  
+  skip_final_snapshot = true
+  lifecycle {
+    create_before_destroy = true
+  }
 
   # Storage configuration
   allocated_storage     = var.db_allocated_storage
@@ -80,11 +84,11 @@ resource "aws_db_instance" "main" {
 
   # Backup configuration
   backup_retention_period = var.db_backup_retention_period
-  backup_window          = "03:00-04:00"
-  maintenance_window     = "sun:04:00-sun:05:00"
+  backup_window           = "03:00-04:00"
+  maintenance_window      = "sun:04:00-sun:05:00"
 
   # Performance Insights
-  performance_insights_enabled = true
+  performance_insights_enabled          = true
   performance_insights_retention_period = 7
 
   # Monitoring
@@ -98,7 +102,7 @@ resource "aws_db_instance" "main" {
   multi_az = var.environment == "production"
 
   tags = {
-    Name = "${var.project_name}-db"
+    Name        = "${var.project_name}-db"
     Environment = var.environment
   }
 }

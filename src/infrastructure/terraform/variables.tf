@@ -117,10 +117,10 @@ variable "app_desired_count" {
   default     = 1
 }
 
-variable "ecr_repository_url" {
-  description = "ECR repository URL"
-  type        = string
-}
+# variable "ecr_repository_url" {
+#   description = "ECR repository URL"
+#   type        = string
+# }
 
 # Cache Configuration
 variable "cache_ttl_l1" {

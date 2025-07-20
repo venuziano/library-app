@@ -54,5 +54,15 @@ pids
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+/src/infrastructure/terraform/.terraform
+/src/infrastructure/terraform/.terraform.lock.hcl
+/src/infrastructure/terraform/.terraform.tfstate.lock.info
+/src/infrastructure/terraform/terraform.tfvars
+/src/infrastructure/terraform/terraform.tfstate
+/src/infrastructure/terraform/terraform.tfstate*
+/src/infrastructure/terraform/tfplan
+
+
+
 
 /mailhog_data
