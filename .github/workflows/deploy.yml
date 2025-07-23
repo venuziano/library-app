@@ -1,0 +1,76 @@
+name: Deploy API to EC2
+
+concurrency:
+  group: deploy-api
+  cancel-in-progress: true
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'api/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Install & build API
+        working-directory: api
+        run: |
+          npm ci
+          npm run build
+
+      - name: Sync dist folder to EC2
+        uses: burnett01/rsync-deployments@7.0.2
+        with:
+          switches: -avz --delete
+          path: api/dist/
+          remote_host: ${{ secrets.EC2_HOST }}
+          remote_user: ${{ secrets.EC2_USER }}
+          remote_key: ${{ secrets.SSH_PRIVATE_KEY }}
+          remote_path: /home/ubuntu/repo/expenses-app/api/dist
+
+      # ── NEW STEP: push down an .env ───────────────────────────────
+      - name: Upload .env to EC2
+        uses: appleboy/ssh-action@v0.1.9
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cat > /home/ubuntu/repo/expenses-app/api/.env <<EOF
+            NODE_ENV=production
+            HOST=${{ secrets.HOST }}
+            DATABASE=${{ secrets.DATABASE }}
+            PG_PORT=${{ secrets.PG_PORT }}
+            DB_USER=${{ secrets.DB_USER }}
+            DB_USE_SSL=${{ secrets.DB_USE_SSL }}
+            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+            PG_TYPE=${{ secrets.PG_TYPE }}
+            API_PORT=${{ secrets.API_PORT }}
+            WHATSAPP_TOKEN=${{ secrets.WHATSAPP_TOKEN }}
+            WHATSAPP_VERIFY_TOKEN=${{ secrets.WHATSAPP_VERIFY_TOKEN }}
+            WHATSAPP_PHONE_NUMBER_ID=${{ secrets.WHATSAPP_PHONE_NUMBER_ID }}
+            EOF
+
+      - name: Reload PM2 on EC2
+        uses: appleboy/ssh-action@v0.1.9
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /home/ubuntu/repo/expenses-app/
+            git pull origin master
+            cd api/
+            pm2 startOrReload ecosystem.config.js --env production --update-env
