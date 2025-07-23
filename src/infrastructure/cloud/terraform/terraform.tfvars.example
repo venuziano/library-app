@@ -34,6 +34,7 @@ ecr_repository_url = "123456789012.dkr.ecr.us-east-1.amazonaws.com/library-app"
 
 # EKS
 eks_cluster_name = "name-example-eks"
+home_ip = "ip"
 
 # Cache Configuration
 cache_ttl_l1 = 300

@@ -147,6 +147,11 @@ variable "eks_cluster_name" {
   description = "Name of the EKS cluster"
 }
 
+variable "home_ip" {
+  type        = list(string)
+  description = "Home ip"
+}
+
 variable "eks_cluster_version" {
   type        = string
   description = "Kubernetes version"
