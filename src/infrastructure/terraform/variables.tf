@@ -140,4 +140,39 @@ variable "ses_domain" {
   description = "SES domain for email sending"
   type        = string
   default     = "example.com"
-} 
+}
+
+variable "eks_cluster_name" {
+  type        = string
+  description = "Name of the EKS cluster"
+}
+
+variable "eks_cluster_version" {
+  type        = string
+  description = "Kubernetes version"
+  default     = "1.28"
+}
+
+variable "eks_node_instance_types" {
+  type        = list(string)
+  description = "EC2 types for worker nodes"
+  default     = ["t3.large"]
+}
+
+variable "eks_node_min_capacity" {
+  type        = number
+  description = "Min # of workers"
+  default     = 3
+}
+
+variable "eks_node_desired_capacity" {
+  type        = number
+  description = "Desired # of workers"
+  default     = 3
+}
+
+variable "eks_node_max_capacity" {
+  type        = number
+  description = "Max # of workers"
+  default     = 5
+}

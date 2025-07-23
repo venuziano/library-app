@@ -81,4 +81,14 @@ output "rds_port" {
 #     elasticache = aws_cloudwatch_log_group.elasticache.name
 #     ses         = aws_cloudwatch_log_group.ses.name
 #   }
-# } 
+# }
+
+output "eks_cluster_endpoint" {
+  description = "EKS API endpoint"
+  value       = module.eks.cluster_endpoint
+}
+
+output "eks_cluster_security_group_id" {
+  description = "Control-plane SG"
+  value       = module.eks.cluster_security_group_id
+}
