@@ -108,7 +108,7 @@ jobs:
       - name: Render Deployment manifest
         run: |
           sed "s|__IMAGE__|${{ secrets.DOCKER_HUB_USERNAME }}/library-api:${{ github.sha }}|" \
-            src/infrastructure/cloud/k8s/deployment.tpl.yaml \
+            src/infrastructure/cloud/k8s/deployment.template.yaml \
             > src/infrastructure/cloud/k8s/deployment.yaml
 
       - name: Deploy to EKS
