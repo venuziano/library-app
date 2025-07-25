@@ -52,13 +52,43 @@ jobs:
       - name: Set up kubectl
         uses: azure/setup-kubectl@v3
 
-      - name: Split .env for ConfigMap
+      - name: Create config.env from static values
         run: |
-          grep -vE '^(DB_USER|DB_PASSWORD|BB_PASS|JWT_SECRET|MAIL_PASSWORD)' .env > config.env
+          cat <<EOF > config.env
+          API_PORT=3010
+          HOST=host.docker.internal
+          GRAPHQL_PLAYGROUND=true
+          NODE_ENV=dev
 
-      - name: Split .env for Secret
+          DATABASE=rrs
+          PG_TYPE=postgres
+          PG_PORT=5432
+
+          REDIS_URL=redis://redis:6379
+          REDIS_HOST=redis
+          REDIS_PORT=6379
+          CACHE_TTL_L1=10
+          CACHE_TTL_L2=20
+
+          BB_USER=bull
+
+          JWT_EXPIRES_IN=1h
+
+          MAIL_HOST=mailhog
+          MAIL_PORT=1025
+          MAIL_SECURE=false
+          MAIL_USER=
+          EOF
+
+      - name: Create secret.env from GitHub secrets
         run: |
-          grep -E '^(DB_USER|DB_PASSWORD|BB_PASS|JWT_SECRET|MAIL_PASSWORD)' .env > secret.env
+          cat <<EOF > secret.env
+          DB_USER=${{ secrets.DB_USER }}
+          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+          BB_PASS=${{ secrets.BB_PASS }}
+          JWT_SECRET=${{ secrets.JWT_SECRET }}
+          MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}
+          EOF
 
       - name: Generate ConfigMap YAML
         run: |
