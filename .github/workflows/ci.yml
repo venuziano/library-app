@@ -1,4 +1,5 @@
-name: Deploy API to EC2
+---
+name: library-api-ci
 
 concurrency:
   group: deploy-api
@@ -7,70 +8,81 @@ concurrency:
 on:
   push:
     branches:
-      - master
-    paths:
-      - 'api/**'
+      - main
 
 jobs:
-  deploy:
+  build-and-generate-k8s:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     steps:
-      - name: Check out repository
+      - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Use Node.js 20.x
-        uses: actions/setup-node@v3
-        with:
-          node-version: '20'
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
 
-      - name: Install & build API
-        working-directory: api
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: >-
+            ${{ secrets.DOCKER_HUB_USERNAME }}/library-api:${{ github.sha }}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Update kubeconfig
         run: |
-          npm ci
-          npm run build
+          aws eks update-kubeconfig \
+            --region ${{ secrets.AWS_REGION }} \
+            --name ${{ secrets.EKS_CLUSTER_NAME }}
 
-      - name: Sync dist folder to EC2
-        uses: burnett01/rsync-deployments@7.0.2
-        with:
-          switches: -avz --delete
-          path: api/dist/
-          remote_host: ${{ secrets.EC2_HOST }}
-          remote_user: ${{ secrets.EC2_USER }}
-          remote_key: ${{ secrets.SSH_PRIVATE_KEY }}
-          remote_path: /home/ubuntu/repo/expenses-app/api/dist
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
 
-      # ── NEW STEP: push down an .env ───────────────────────────────
-      - name: Upload .env to EC2
-        uses: appleboy/ssh-action@v0.1.9
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            cat > /home/ubuntu/repo/expenses-app/api/.env <<EOF
-            NODE_ENV=production
-            HOST=${{ secrets.HOST }}
-            DATABASE=${{ secrets.DATABASE }}
-            PG_PORT=${{ secrets.PG_PORT }}
-            DB_USER=${{ secrets.DB_USER }}
-            DB_USE_SSL=${{ secrets.DB_USE_SSL }}
-            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-            PG_TYPE=${{ secrets.PG_TYPE }}
-            API_PORT=${{ secrets.API_PORT }}
-            WHATSAPP_TOKEN=${{ secrets.WHATSAPP_TOKEN }}
-            WHATSAPP_VERIFY_TOKEN=${{ secrets.WHATSAPP_VERIFY_TOKEN }}
-            WHATSAPP_PHONE_NUMBER_ID=${{ secrets.WHATSAPP_PHONE_NUMBER_ID }}
-            EOF
+      - name: Split .env for ConfigMap
+        run: |
+          grep -vE '^(DB_USER|DB_PASSWORD|BB_PASS|JWT_SECRET|MAIL_PASSWORD)' .env > config.env
 
-      - name: Reload PM2 on EC2
-        uses: appleboy/ssh-action@v0.1.9
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            cd /home/ubuntu/repo/expenses-app/
-            git pull origin master
-            cd api/
-            pm2 startOrReload ecosystem.config.js --env production --update-env
+      - name: Split .env for Secret
+        run: |
+          grep -E '^(DB_USER|DB_PASSWORD|BB_PASS|JWT_SECRET|MAIL_PASSWORD)' .env > secret.env
+
+      - name: Generate ConfigMap YAML
+        run: |
+          kubectl create configmap library-api-config \
+            --from-env-file=config.env \
+            --dry-run=client \
+            -o yaml > src/infrastructure/cloud/k8s/configmap.yaml
+
+      - name: Generate Secret YAML
+        run: |
+          kubectl create secret generic library-api-secret \
+            --from-env-file=secret.env \
+            --type=Opaque \
+            --dry-run=client \
+            -o yaml > src/infrastructure/cloud/k8s/secret.yaml
+
+      - name: Render Deployment manifest
+        run: |
+          sed "s|__IMAGE__|${{ secrets.DOCKER_HUB_USERNAME }}/library-api:${{ github.sha }}|" \
+            src/infrastructure/cloud/k8s/deployment.tpl.yaml \
+            > src/infrastructure/cloud/k8s/deployment.yaml
+
+      - name: Deploy to EKS
+        run: |
+          kubectl apply -f src/infrastructure/cloud/k8s/configmap.yaml \
+                         -f src/infrastructure/cloud/k8s/secret.yaml \
+                         -f src/infrastructure/cloud/k8s/deployment.yaml
