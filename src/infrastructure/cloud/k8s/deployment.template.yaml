@@ -62,6 +62,6 @@ metadata:
   name: smtp
 spec:
   type: ExternalName
-  externalName: smtp.mailtrap.io
+  externalName: sandbox.smtp.mailtrap.io
   ports:
   - port: 2525
