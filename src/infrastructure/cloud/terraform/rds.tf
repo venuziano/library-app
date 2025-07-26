@@ -79,7 +79,10 @@ resource "aws_db_instance" "main" {
   port     = 5432
 
   # Network configuration
-  vpc_security_group_ids = [aws_security_group.rds.id]
+  vpc_security_group_ids = [
+    aws_security_group.rds.id,
+    module.eks.node_security_group_id
+  ]
   db_subnet_group_name   = aws_db_subnet_group.main.name
   parameter_group_name   = aws_db_parameter_group.main.name
 
