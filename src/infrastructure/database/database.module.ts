@@ -1,5 +1,6 @@
 import { Global, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { join } from 'path';
 
 import { AppConfigModule } from 'src/infrastructure/config/app-config.module';
 import { AppEnvConfigService } from 'src/infrastructure/config/environment-variables/app-env.config';
@@ -20,6 +21,8 @@ import { AppEnvConfigService } from 'src/infrastructure/config/environment-varia
         autoLoadEntities: true,
         synchronize: false,
         ssl: config.nodeEnv === 'prod' ? { rejectUnauthorized: false } : false,
+        migrationsRun: true,
+        migrations: [join(__dirname, '../migrations/*{.js,.ts}')],
       }),
       inject: [AppEnvConfigService],
     }),
