@@ -19,6 +19,7 @@ import { AppEnvConfigService } from 'src/infrastructure/config/environment-varia
         database: config.dbName,
         autoLoadEntities: true,
         synchronize: false,
+        ssl: config.nodeEnv === 'prod' ? { rejectUnauthorized: false } : false,
       }),
       inject: [AppEnvConfigService],
     }),
