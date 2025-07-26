@@ -15,12 +15,28 @@ import { MAIL_PROCESS_TOKEN } from 'src/application/jobs/email-jobs';
     BullModule.forRootAsync({
       imports: [AppConfigModule],
       inject: [AppEnvConfigService],
-      useFactory: (config: AppEnvConfigService) => ({
-        redis: {
+      useFactory: (config: AppEnvConfigService) => {
+        const common = {
           host: config.redisHost,
-          port: config.redisPort,
-        },
-      }),
+          port: Number(config.redisPort),
+        };
+
+        return {
+          redis:
+            config.nodeEnv === 'prod'
+              ? {
+                  ...common,
+                  tls: { rejectUnauthorized: false },
+                }
+              : common,
+        };
+      },
+      // useFactory: (config: AppEnvConfigService) => ({
+      //   redis: {
+      //     host: config.redisHost,
+      //     port: Number(config.redisPort),
+      //   },
+      // }),
     }),
     // registers ONE Redis-backed queue named "mail"
     BullModule.registerQueue({ name: MAIL_PROCESS_TOKEN }),
