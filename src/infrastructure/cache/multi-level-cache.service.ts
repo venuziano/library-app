@@ -84,11 +84,13 @@ export class MultiLevelCacheService implements ICacheService, OnModuleInit {
       },
     );
 
-    // enable keyspace notifications
-    try {
-      await this.redisClient.configSet('notify-keyspace-events', 'Egx');
-    } catch (err) {
-      this.logger.error(`Failed to enable Redis keyspace-events: ${err}`);
+    // enable keyspace notifications for local environment/docker
+    if (this.config.nodeEnv !== 'prod') {
+      try {
+        await this.redisClient.configSet('notify-keyspace-events', 'Ex');
+      } catch (err) {
+        this.logger.warn('Skipping CONFIG SET on managed Redis, error:', err);
+      }
     }
   }
 
