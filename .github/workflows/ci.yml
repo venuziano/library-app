@@ -55,29 +55,29 @@ jobs:
       - name: Create config.env from static values
         run: |
           cat <<EOF > config.env
-          API_PORT=3010
-          HOST=host.docker.internal
-          GRAPHQL_PLAYGROUND=true
-          NODE_ENV=dev
+          API_PORT=${{ secrets.API_PORT }}
+          HOST=${{ secrets.HOST }}
+          GRAPHQL_PLAYGROUND=${{ secrets.GRAPHQL_PLAYGROUND }}
+          NODE_ENV=${{ secrets.NODE_ENV }}
 
-          DATABASE=rrs
-          PG_TYPE=postgres
-          PG_PORT=5432
+          DATABASE=${{ secrets.DATABASE }}
+          PG_TYPE=${{ secrets.PG_TYPE }}
+          PG_PORT=${{ secrets.PG_PORT }}
 
-          REDIS_URL=redis://redis:6379
-          REDIS_HOST=redis
-          REDIS_PORT=6379
-          CACHE_TTL_L1=10
-          CACHE_TTL_L2=20
+          REDIS_URL=r${{ secrets.REDIS_URL }}
+          REDIS_HOST=${{ secrets.REDIS_HOST }}
+          REDIS_PORT=${{ secrets.REDIS_PORT }}
+          CACHE_TTL_L1=${{ secrets.CACHE_TTL_L1 }}
+          CACHE_TTL_L2=${{ secrets.CACHE_TTL_L2 }}
 
-          BB_USER=bull
+          BB_USER=${{ secrets.BB_USER }}
 
-          JWT_EXPIRES_IN=1h
+          JWT_EXPIRES_IN=${{ secrets.JWT_EXPIRES_IN }}
 
-          MAIL_HOST=mailhog
-          MAIL_PORT=1025
-          MAIL_SECURE=false
-          MAIL_USER=
+          MAIL_HOST=${{ secrets.MAIL_HOST }}
+          MAIL_PORT=${{ secrets.MAIL_PORT }}
+          MAIL_SECURE=${{ secrets.MAIL_SECURE }}
+          MAIL_USER=${{ secrets.MAIL_USER }}
           EOF
 
       - name: Create secret.env from GitHub secrets
