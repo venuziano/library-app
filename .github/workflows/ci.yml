@@ -64,7 +64,7 @@ jobs:
           PG_TYPE=${{ secrets.PG_TYPE }}
           PG_PORT=${{ secrets.PG_PORT }}
 
-          REDIS_URL=r${{ secrets.REDIS_URL }}
+          REDIS_URL=${{ secrets.REDIS_URL }}
           REDIS_HOST=${{ secrets.REDIS_HOST }}
           REDIS_PORT=${{ secrets.REDIS_PORT }}
           CACHE_TTL_L1=${{ secrets.CACHE_TTL_L1 }}
