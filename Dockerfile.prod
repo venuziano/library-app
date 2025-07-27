@@ -7,12 +7,17 @@ WORKDIR /app
 COPY package*.json ./
 
 # install only production deps (no dev dependencies)
-RUN npm ci
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci
 
 # copy the rest of the source, then build (if you have a build step)
 COPY . .
 
-RUN npm run build && npm prune --production
+# keep devDeps for build step
+RUN npm run build
+
+# remove devDeps after build
+RUN npm prune --production
 
 # Stage 2: runtime image
 FROM node:20-alpine AS runtime

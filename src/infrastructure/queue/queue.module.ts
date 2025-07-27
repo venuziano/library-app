@@ -31,12 +31,6 @@ import { MAIL_PROCESS_TOKEN } from 'src/application/jobs/email-jobs';
               : common,
         };
       },
-      // useFactory: (config: AppEnvConfigService) => ({
-      //   redis: {
-      //     host: config.redisHost,
-      //     port: Number(config.redisPort),
-      //   },
-      // }),
     }),
     // registers ONE Redis-backed queue named "mail"
     BullModule.registerQueue({ name: MAIL_PROCESS_TOKEN }),

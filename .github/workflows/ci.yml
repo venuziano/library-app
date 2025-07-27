@@ -35,6 +35,10 @@ jobs:
           push: true
           tags: >-
             ${{ secrets.DOCKER_HUB_USERNAME }}/library-api:${{ github.sha }}
+          cache-from: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/library-api:buildcache
+          cache-to: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/library-api:buildcache,mode=max
+          build-args: |
+            BUILDKIT_INLINE_CACHE=1
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2

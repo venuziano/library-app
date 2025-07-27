@@ -17,7 +17,6 @@
 #   }
 
 #   reputation_metrics_enabled = true
-#   last_fresh_start_enabled   = true
 # }
 
 # # SES Event Destination for CloudWatch
@@ -114,6 +113,7 @@
 
 #   tags = {
 #     Name = "${var.project_name}-ses-logs"
+#     Environment = var.environment
 #   }
 # }
 
