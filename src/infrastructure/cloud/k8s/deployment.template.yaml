@@ -16,6 +16,7 @@ spec:
       containers:
       - name: library-api
         image: __IMAGE__
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 3010
         envFrom:
