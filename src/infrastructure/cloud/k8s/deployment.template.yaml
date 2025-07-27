@@ -24,6 +24,33 @@ spec:
             name: library-api-config
         - secretRef:
             name: library-api-secret
+
+        livenessProbe:
+          httpGet:
+            path: /ping
+            port: 3010
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          failureThreshold: 3
+          timeoutSeconds: 2
+
+        readinessProbe:
+          httpGet:
+            path: /queue
+            port: 3010
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 3
+
+        startupProbe:
+          httpGet:
+            path: /mail
+            port: 3010
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 12
 ---
 apiVersion: v1
 kind: Service

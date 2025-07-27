@@ -22,12 +22,6 @@ export class HealthController {
     return this.health.check([() => this.mailerHealth.isHealthy('mail')]);
   }
 
-  @Get('mail-1')
-  @HealthCheck()
-  checkMail1() {
-    return this.health.check([() => this.mailerHealth.isHealthy('mail')]);
-  }
-
   @Get('queue')
   @HealthCheck()
   checkQueue() {
