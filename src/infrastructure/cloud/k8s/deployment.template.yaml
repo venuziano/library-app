@@ -27,7 +27,7 @@ spec:
 
         livenessProbe:
           httpGet:
-            path: /ping
+            path: /health/ping
             port: 3010
           initialDelaySeconds: 10
           periodSeconds: 10
@@ -36,7 +36,7 @@ spec:
 
         readinessProbe:
           httpGet:
-            path: /queue
+            path: /health/queue
             port: 3010
           initialDelaySeconds: 5
           periodSeconds: 10
@@ -45,7 +45,7 @@ spec:
 
         startupProbe:
           httpGet:
-            path: /mail
+            path: /health/mail
             port: 3010
           initialDelaySeconds: 5
           periodSeconds: 5
