@@ -10,8 +10,12 @@ export class RedisCheckService implements OnModuleInit {
   constructor(private readonly config: AppEnvConfigService) {}
 
   async onModuleInit() {
-    const url: string = this.config.redisURL;
+    const url: string =
+      this.config.nodeEnv === 'prod'
+        ? this.config.redisURL.replace(/^redis:\/\//, 'rediss://')
+        : this.config.redisURL;
     console.log('url', url);
+
     this.client = createClient({ url });
     this.client.on('error', (err: unknown) => {
       if (err instanceof Error) {
