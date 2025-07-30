@@ -98,30 +98,6 @@ variable "cache_node_type" {
   default     = "cache.t3.micro"
 }
 
-# Application Configuration
-variable "app_cpu" {
-  description = "ECS task CPU units"
-  type        = number
-  default     = 256
-}
-
-variable "app_memory" {
-  description = "ECS task memory in MB"
-  type        = number
-  default     = 512
-}
-
-variable "app_desired_count" {
-  description = "ECS service desired count"
-  type        = number
-  default     = 1
-}
-
-# variable "ecr_repository_url" {
-#   description = "ECR repository URL"
-#   type        = string
-# }
-
 # Cache Configuration
 variable "cache_ttl_l1" {
   description = "L1 cache TTL in seconds"
@@ -133,13 +109,6 @@ variable "cache_ttl_l2" {
   description = "L2 cache TTL in seconds"
   type        = number
   default     = 3600
-}
-
-# SES Configuration
-variable "ses_domain" {
-  description = "SES domain for email sending"
-  type        = string
-  default     = "example.com"
 }
 
 variable "eks_cluster_name" {
