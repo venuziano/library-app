@@ -11,7 +11,7 @@ export class RedisCheckService implements OnModuleInit {
 
   async onModuleInit() {
     const url: string = this.config.redisURL;
-
+    console.log('url', url);
     this.client = createClient({ url });
     this.client.on('error', (err: unknown) => {
       if (err instanceof Error) {
@@ -24,6 +24,7 @@ export class RedisCheckService implements OnModuleInit {
     try {
       await this.client.connect();
       const pong = await this.client.ping();
+      console.log('pong', pong);
       if (pong === 'PONG') {
         this.logger.log('✅ Successfully connected to Redis');
       } else {
