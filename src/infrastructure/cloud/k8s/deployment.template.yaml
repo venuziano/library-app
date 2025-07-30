@@ -24,32 +24,32 @@ spec:
         - secretRef:
             name: library-api-secret
 
-        # livenessProbe:
-        #   httpGet:
-        #     path: /health/ping
-        #     port: 3010
-        #   initialDelaySeconds: 10
-        #   periodSeconds: 15
-        #   timeoutSeconds: 2
-        #   failureThreshold: 3
+        livenessProbe:
+          httpGet:
+            path: /health/ping
+            port: 3010
+          initialDelaySeconds: 10
+          periodSeconds: 15
+          timeoutSeconds: 2
+          failureThreshold: 3
 
-        # readinessProbe:
-        #   httpGet:
-        #     path: /health/ping
-        #     port: 3010
-        #   initialDelaySeconds: 0
-        #   periodSeconds: 10
-        #   timeoutSeconds: 2
-        #   failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health/ping
+            port: 3010
+          initialDelaySeconds: 0
+          periodSeconds: 10
+          timeoutSeconds: 2
+          failureThreshold: 3
 
-        # startupProbe:
-        #   httpGet:
-        #     path: /health/ping
-        #     port: 3010
-        #   initialDelaySeconds: 5
-        #   periodSeconds: 5
-        #   timeoutSeconds: 2
-        #   failureThreshold: 15
+        startupProbe:
+          httpGet:
+            path: /health/ping
+            port: 3010
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 2
+          failureThreshold: 15
 ---
 apiVersion: v1
 kind: Service
